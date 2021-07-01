@@ -1,0 +1,58 @@
+Open the specific matrices for the various task or rest files. For now start with participant 2
+Processed data is located in /Box/Quest_Backup/MSC/TaskFC/FC_Parcels
+Here you’ll find each task with fully processed data
+Open the processed file from subject MSC02 for the memory task
+mem/MSC02_parcel_corrmat.mat
+This will give you all region x region x day 
+Compute the mean over each page of data (rows and columns) collapsing days
+concat_parcel_corrmat=mean(parcel_corrmat,3) #This specifies that we are collapsing by the 3rd dimension being days 
+Now that we have our regions we want to see what regions are correlated during the memory task. Irrelevant of other measures like rest. 
+First we will need to reorder it so regions are aligned based on networks
+There is already a function written to do this found in
+/Quest_Backup/Scripts/Scripts_general/task_rest_comparisons/figure_corrmat_network_generic.m
+There are specific folders to add to path
+/Quest_backup/Scripts/Scripts_general
+###make sure you are saving this to a local file not in box because it will update to box and change code ###
+You’ll also want to look at the atlas_parameters.m to make sure they are pointing to the right files
+Because we are doing parcels should only look at that atlas elseif statement
+From this script make sure you are using the appropriate files that are in 
+/Quest_Backup/Atlases/Evan_parcellation/
+figure_corrmat_network_generic(concat_parcel_corrmat, atlas_parameters('Parcels','/Users/Alexis/Box/Quest_Backup/Atlases/Evan_parcellation/','MSC02'))
+
+You’ll want to edit the the color maps 
+Colormapeditor
+Once you get a better handle on what kinds of tweaks you want to add to the correlation map apply them in the script
+For min/max values of the corr map 
+Task-rest between -.2,2
+Just task
+-.4, 1
+
+See if you can make a script that goes through all tasks in a participant and make maps for all 
+
+
+Working with task-rest 
+Load parcels for a task and rest 
+
+mem_concat=mean(parcel_corrmat, 3)
+rest_concat=mean(parcel_corrmat, 3)
+
+memMrest=mem_concat-rest_concat
+
+
+MSC02 If you look at just the memory task a lot of networks are negatively correlated with one another. But if you minus rest from the memory task suddenly a lot of networks have greater variability in correlations mostly ranging around 0. 
+
+
+Mixed alone, a lot of negative correlations between DMN, positive correlations with visual and motor, CO and motor. MixedMrest revealed more positive correlations esp VAN and auditory, motor, CO, DAN and CO and VAN, DAN, FP, visual, DMN
+
+Motor alone negative DMN, positive DAN and FP, and CO with motor, DAN. MotorMrest mostly zero, some negative DMN, some pos DAN and CO, motor
+MSC05
+Just memory seems to range, DMN is negatively correlated with a lot of the other networks (visual, FP, DAN, VAN, salience, CO, motor) some postiive association with FP and DAN, VAN and CO and auditory, motor, DAN. When we minus rest, a lot of these networks aren’t super correlated with one another, still see some negative between DMN and DAN, FP, visual, VAN. Positive correlation between CO and DAN, FP. 
+
+Mixed task alone produced largely negative corr with DMN along most networks, positive corr CO, motor, auditory, DAN. MixMrest removes a lot of relationship, still negative corr DMN some positive corr between DAN and CO, CO and FP. 
+
+Motor alone, largely negative DMN, pos CO. motorMrest some  neg DMN general pos DAN, VAN, CO
+MSC06
+Just memory lot of negative correlations with DMN few positive loadings. After taking in rest, everything starts to center around 0 some negative still exist with DMN FP now has more positive correlations. 
+
+Mixed alone largely negative results in DMN, positive CO and motor, auditory and CO, motor
+
