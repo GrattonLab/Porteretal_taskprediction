@@ -2,14 +2,10 @@
 # coding: utf-8
 
 # In[ ]:
-from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import LeaveOneOut
 from sklearn.linear_model import RidgeClassifier
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import f1_score
-from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.metrics import confusion_matrix
 import numpy as np
 import os
 import sys
@@ -17,8 +13,7 @@ import pandas as pd
 import itertools
 import reshape
 from statistics import mean
-import matplotlib.gridspec as gridspec
-import matplotlib.pyplot as plt
+import scipy.io
 #import results
 import warnings
 warnings.filterwarnings("ignore")
@@ -116,11 +111,11 @@ def folds(clf,taskFC, restFC, test_taskFC, test_restFC):
         ytrain_task,yval_task=t[train_index], t[test_index]
         X_tr=np.concatenate((Xtrain_task, Xtrain_rest))
         y_tr = np.concatenate((ytrain_task,ytrain_rest))
-        X_val=np.concatenate((Xtval_task, Xval_rest))
+        X_val=np.concatenate((Xval_task, Xval_rest))
         y_val = np.concatenate((yval_task,yval_rest))
         y_tr=np.random.permutation(y_tr)
         clf.fit(X_tr,y_tr)
-        Sscores=clf.score(Xtest,ytest)
+        SSscores=clf.score(X_val,y_val)
         SS_acc.append(SSscores)
         OSscores=clf.score(Xtest,ytest)
         OS_acc.append(OSscores)
@@ -427,7 +422,7 @@ def netFile(netSpec,sub):
     #fullTask=np.empty((40,120))
     fullRest=np.empty((40,120))
     #memory
-    tmp=projDir+'mem/allsubs_mem_corrmats_bysess_orig_INDformat.mat'
+    tmp=IndNetDir+'mem/allsubs_mem_corrmats_bysess_orig_INDformat.mat'
     fileFC=scipy.io.loadmat(tmp,struct_as_record=False,squeeze_me=False)
     fileFC=fileFC['sess_task_corrmat']
     fileFC=fileFC[0,0].AllMem
@@ -449,7 +444,7 @@ def netFile(netSpec,sub):
     memFC = memFC[~mask,:]
     #fullTask[:10]=ds
     #motor
-    tmp=projDir+'motor/allsubs_motor_corrmats_bysess_orig_INDformat.mat'
+    tmp=IndNetDir+'motor/allsubs_motor_corrmats_bysess_orig_INDformat.mat'
     fileFC=scipy.io.loadmat(tmp,struct_as_record=False,squeeze_me=False)
     fileFC=fileFC['sess_task_corrmat']
     fileFC=fileFC[0,0].AllMotor
@@ -470,7 +465,7 @@ def netFile(netSpec,sub):
     column_indices = np.where(mask)[0]
     motFC = motFC[~mask,:]
     #glass
-    tmp=projDir+'mixed/allsubs_mixed_corrmats_bysess_orig_INDformat.mat'
+    tmp=IndNetDir+'mixed/allsubs_mixed_corrmats_bysess_orig_INDformat.mat'
     fileFC=scipy.io.loadmat(tmp,struct_as_record=False,squeeze_me=False)
     fileFC=fileFC['sess_task_corrmat']
     fileFC=fileFC[0,0].AllGlass
@@ -491,7 +486,7 @@ def netFile(netSpec,sub):
     column_indices = np.where(mask)[0]
     glassFC = glassFC[~mask,:]
     #semantic
-    tmp=projDir+'mixed/allsubs_mixed_corrmats_bysess_orig_INDformat.mat'
+    tmp=IndNetDir+'mixed/allsubs_mixed_corrmats_bysess_orig_INDformat.mat'
     fileFC=scipy.io.loadmat(tmp,struct_as_record=False,squeeze_me=False)
     fileFC=fileFC['sess_task_corrmat']
     fileFC=fileFC[0,0].AllSemantic
@@ -515,7 +510,7 @@ def netFile(netSpec,sub):
     #will have to write something on converting resting time series data into 4 split pieces
     #######################################################################################
     #open rest
-    tmpRest=projDir+'rest/'+sub+'_parcel_corrmat.mat'
+    tmpRest=IndNetDir+'rest/'+sub+'_parcel_corrmat.mat'
     fileFC=scipy.io.loadmat(tmpRest)
     #Convert to numpy array
     fileFC=np.array(fileFC['parcel_corrmat'])

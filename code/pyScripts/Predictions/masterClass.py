@@ -19,13 +19,13 @@ import reshape
 from statistics import mean
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+import scipy.io
 #import results
 import warnings
 warnings.filterwarnings("ignore")
 # Initialization of directory information:
-thisDir = os.path.expanduser('~/Desktop/Porteretal_taskprediction/'')
+thisDir = os.path.expanduser('~/Desktop/Porteretal_taskprediction/')
 dataDir = thisDir + 'data/corrmats/'
-#outDir = thisDir + 'output/results/'
 outDir = thisDir + 'output/results/'
 figsDir=thisDir + 'output/figures/'
 IndNetDir=thisDir+'data/IndNet/'
@@ -134,15 +134,15 @@ def folds(clf,taskFC, restFC, test_taskFC, test_restFC):
         ytrain_task,yval_task=t[train_index], t[test_index]
         X_tr=np.concatenate((Xtrain_task, Xtrain_rest))
         y_tr = np.concatenate((ytrain_task,ytrain_rest))
-        X_val=np.concatenate((Xtval_task, Xval_rest))
+        X_val=np.concatenate((Xval_task, Xval_rest))
         y_val = np.concatenate((yval_task,yval_rest))
         clf.fit(X_tr,y_tr)
         #Same subject
-        SS_y_predict=clf.predict(Xval)
+        SS_y_predict=clf.predict(X_val)
         SStn, SSfp, SSfn, SStp=confusion_matrix(y_val, SS_y_predict).ravel()
         same_sub_TPV=SStp/(SStp+SSfp)
         same_sub_RPV=SStn/(SStn+SSfn)
-        Sscores=clf.score(Xtest,ytest)
+        SSscores=clf.score(X_val,y_val)
         SS_acc.append(SSscores)
         SS_TPV_score.append(same_sub_TPV)
         SS_RPV_score.append(same_sub_RPV)
@@ -161,7 +161,7 @@ def folds(clf,taskFC, restFC, test_taskFC, test_restFC):
     SStotal_acc=mean(SS_acc)
     SStotal_TPV=mean(SS_TPV_score)
     SStotal_RPV=mean(SS_RPV_score)
-    return SStotal_acc, SS_total_TPV, SS_total_RPV, OStotal_acc, OStotal_TPV, OStotal_RPV
+    return SStotal_acc, SStotal_TPV, SStotal_RPV, OStotal_acc, OStotal_TPV, OStotal_RPV
 
 def classifyAll(classifier='Ridge'):
     """
@@ -185,7 +185,7 @@ def classifyAll(classifier='Ridge'):
     RPV_scores_SS=[]
     df=pd.DataFrame(subsComb, columns=['train_sub','test_sub'])
     for index, row in df.iterrows():
-        SS_score, SS_TPV_total,SS_RPV_total, OS_score, OS_TPV_total,OS_RPV_total=modelAll(clf,train_sub=row['train_sub'], test_sub=row['test_sub'])
+        SS_score, SS_TPV_total,SS_RPV_total, OS_score, OS_TPV_total,OS_RPV_total=modelAll_binary(clf,train_sub=row['train_sub'], test_sub=row['test_sub'])
         acc_scores_SS.append(SS_score)
         TPV_scores_SS.append(SS_TPV_total)
         RPV_scores_SS.append(SS_RPV_total)
@@ -445,13 +445,9 @@ def multiclassAll(classifier='Ridge'):
 
         master_df=pd.concat([master_df,CV_tmp,DS_tmp])
 
-    master_df.to_csv(outDir+'ALL_MC/acc.csv',index=False)
+    master_df.to_csv(outDir+classifier+'/ALL_MC/acc.csv',index=False)
     finalDS=all_CM_DS / all_CM_DS.astype(np.float).sum(axis=1)
     finalCV=all_CM_CV / all_CM_CV.astype(np.float).sum(axis=1)
-
-    finalDS.tofile(outDir+'ALL_MC/finalDS.csv',sep=',')
-    finalCV.tofile(outDir+'ALL_MC/finalCV.csv',sep=',')
-
     fig=plt.figure(figsize=(15,10), constrained_layout=True)
     plt.rcParams['figure.constrained_layout.use'] = True
 #Add grid space for subplots 1 rows by 3 columns
@@ -632,7 +628,7 @@ def netFile(netSpec,sub):
     #fullTask=np.empty((40,120))
     fullRest=np.empty((40,120))
     #memory
-    tmp=projDir+'mem/allsubs_mem_corrmats_bysess_orig_INDformat.mat'
+    tmp=IndNetDir+'mem/allsubs_mem_corrmats_bysess_orig_INDformat.mat'
     fileFC=scipy.io.loadmat(tmp,struct_as_record=False,squeeze_me=False)
     fileFC=fileFC['sess_task_corrmat']
     fileFC=fileFC[0,0].AllMem
@@ -654,7 +650,7 @@ def netFile(netSpec,sub):
     memFC = memFC[~mask,:]
     #fullTask[:10]=ds
     #motor
-    tmp=projDir+'motor/allsubs_motor_corrmats_bysess_orig_INDformat.mat'
+    tmp=IndNetDir+'motor/allsubs_motor_corrmats_bysess_orig_INDformat.mat'
     fileFC=scipy.io.loadmat(tmp,struct_as_record=False,squeeze_me=False)
     fileFC=fileFC['sess_task_corrmat']
     fileFC=fileFC[0,0].AllMotor
@@ -675,7 +671,7 @@ def netFile(netSpec,sub):
     column_indices = np.where(mask)[0]
     motFC = motFC[~mask,:]
     #glass
-    tmp=projDir+'mixed/allsubs_mixed_corrmats_bysess_orig_INDformat.mat'
+    tmp=IndNetDir+'mixed/allsubs_mixed_corrmats_bysess_orig_INDformat.mat'
     fileFC=scipy.io.loadmat(tmp,struct_as_record=False,squeeze_me=False)
     fileFC=fileFC['sess_task_corrmat']
     fileFC=fileFC[0,0].AllGlass
@@ -696,7 +692,7 @@ def netFile(netSpec,sub):
     column_indices = np.where(mask)[0]
     glassFC = glassFC[~mask,:]
     #semantic
-    tmp=projDir+'mixed/allsubs_mixed_corrmats_bysess_orig_INDformat.mat'
+    tmp=IndNetDir+'mixed/allsubs_mixed_corrmats_bysess_orig_INDformat.mat'
     fileFC=scipy.io.loadmat(tmp,struct_as_record=False,squeeze_me=False)
     fileFC=fileFC['sess_task_corrmat']
     fileFC=fileFC[0,0].AllSemantic
@@ -720,7 +716,7 @@ def netFile(netSpec,sub):
     #will have to write something on converting resting time series data into 4 split pieces
     #######################################################################################
     #open rest
-    tmpRest=projDir+'rest/'+sub+'_parcel_corrmat.mat'
+    tmpRest=IndNetDir+'rest/'+sub+'_parcel_corrmat.mat'
     fileFC=scipy.io.loadmat(tmpRest)
     #Convert to numpy array
     fileFC=np.array(fileFC['parcel_corrmat'])

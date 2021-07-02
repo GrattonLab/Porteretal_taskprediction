@@ -13,6 +13,7 @@ import scipy.io
 import random
 import os
 import sys
+from statistics import mean
 #import other python scripts for further anlaysis
 # Initialization of directory information:
 #thisDir = os.path.expanduser('~/Desktop/MSC_Alexis/analysis/')
@@ -23,7 +24,7 @@ outDir = thisDir + 'output/results/Ridge/'
 taskList=['semantic','glass', 'motor','mem']
 subList=['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10']
 subsComb=(list(itertools.permutations(subList, 2)))
-def runScript():
+def rdmNet_DS():
     DS_df=pd.DataFrame()
     featureSize=np.logspace(1, 4.7, num=39,dtype=int)
     for i in range(100):
@@ -38,7 +39,7 @@ def runScript():
 
 
 
-def run_modelAll():
+def rdmNet_classifyAll():
     featureSize=np.logspace(1, 4.7, num=39,dtype=int)
     ALL_df=pd.DataFrame()
     for number in featureSize:
@@ -191,7 +192,7 @@ def folds(train_sub, clf, memFC,semFC,glassFC,motFC, restFC, test_taskFC,test_re
         split=np.empty((9,number))
     else:
         split=np.empty((10,number))
-    for train_index, test_index in kf.split(split):
+    for train_index, test_index in loo.split(split):
         memtrain, memval=memFC[train_index], memFC[test_index]
         semtrain, semval=semFC[train_index], semFC[test_index]
         mottrain, motval=motFC[train_index], motFC[test_index]
@@ -267,6 +268,45 @@ def DSmodel(idx):
             tmp['diff_sub']=diff_sub
             DS=pd.concat([DS,tmp])
     return DS
+
+def AllSubFiles_DS(test_sub,task,idx):
+    """
+    Return task and rest FC all subs
+    Parameters
+    -----------
+    test_sub: Array of testing subs
+    Returns
+    ------------
+    taskFC, restFC : Array of task and rest FC of all testing subs
+    """
+    a_taskFC=reshape.randFeats(dataDir+task+'/'+test_sub[0]+'_parcel_corrmat.mat',idx)
+    a_restFC=reshape.randFeats(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat',idx)
+
+    b_taskFC=reshape.randFeats(dataDir+task+'/'+test_sub[1]+'_parcel_corrmat.mat',idx)
+    b_restFC=reshape.randFeats(dataDir+'rest/'+test_sub[1]+'_parcel_corrmat.mat',idx)
+
+    c_taskFC=reshape.randFeats(dataDir+task+'/'+test_sub[2]+'_parcel_corrmat.mat',idx)
+    c_restFC=reshape.randFeats(dataDir+'rest/'+test_sub[2]+'_parcel_corrmat.mat',idx)
+
+    d_taskFC=reshape.randFeats(dataDir+task+'/'+test_sub[3]+'_parcel_corrmat.mat',idx)
+    d_restFC=reshape.randFeats(dataDir+'rest/'+test_sub[3]+'_parcel_corrmat.mat',idx)
+
+    e_taskFC=reshape.randFeats(dataDir+task+'/'+test_sub[4]+'_parcel_corrmat.mat',idx)
+    e_restFC=reshape.randFeats(dataDir+'rest/'+test_sub[4]+'_parcel_corrmat.mat',idx)
+
+    f_taskFC=reshape.randFeats(dataDir+task+'/'+test_sub[5]+'_parcel_corrmat.mat',idx)
+    f_restFC=reshape.randFeats(dataDir+'rest/'+test_sub[5]+'_parcel_corrmat.mat',idx)
+
+    g_taskFC=reshape.randFeats(dataDir+task+'/'+test_sub[6]+'_parcel_corrmat.mat',idx)
+    g_restFC=reshape.randFeats(dataDir+'rest/'+test_sub[6]+'_parcel_corrmat.mat',idx)
+
+
+    taskFC=np.concatenate((a_taskFC,b_taskFC,c_taskFC,d_taskFC,e_taskFC,f_taskFC,g_taskFC))
+    restFC=np.concatenate((a_restFC,b_restFC,c_restFC,d_restFC,e_restFC,f_restFC,g_restFC))
+
+    return taskFC, restFC
+
+
 def single_task_folds(clf,taskFC, restFC, test_taskFC, test_restFC):
     """
     Cross validation to train and test using nested loops

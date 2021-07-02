@@ -24,46 +24,25 @@ import itertools
 #import other python scripts for further anlaysis
 import reshape
 # Initialization of directory information:
-thisDir = os.path.expanduser('~/Desktop/MSC_Alexis/analysis/')
-dataDir = thisDir + 'data/mvpa_data/'
-outDir = thisDir + 'output/results/subNetwork/'
+thisDir = os.path.expanduser('~/Desktop/Porteretal_taskprediction/')
+dataDir = thisDir +'data/corrmats/'
+outDir = thisDir + 'output/results/Ridge/'
 # Subjects and tasks
 taskList=['semantic','glass', 'motor','mem']
 subList=['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10']
 #all possible combinations of subs and tasks
 subsComb=(list(itertools.permutations(subList, 2)))
-tasksComb=(list(itertools.permutations(taskList, 2)))
-#DS combination
-DSvars=list(itertools.product(list(subsComb),list(taskList)))
-##SS combination
-SSvars=list(itertools.product(list(subList),list(tasksComb)))
-#BS combination
-BSvars=list(itertools.product(list(subsComb),list(tasksComb)))
-#CV combinations
-CVvars=list(itertools.product(list(subList),list(taskList)))
+splitDict=dict([('MSC01',10),('MSC02',10),('MSC03',8),('MSC04',10),('MSC05',10),('MSC06',9),('MSC07',9),('MSC10',10)])
 
 #all combination of network to network
 networks=['unassign','default','visual','fp','dan','van','salience','co','sm','sm-lat','auditory','pmn','pon']
 #no repeats
 netComb=(list(itertools.combinations(networks, 2)))
-def Net2Net():
-#only take within network for model
-    finalDF=pd.DataFrame()
-    for i in networks:
-        tmp_df=classifyAll(network=i,subnetwork=i)
-        tmp_df=tmp_df.groupby(['train_sub']).mean()
-        tmp_df.rename(columns={'cv_acc':'Same Subject','acc':'Different Subject'},inplace=True)
-        tmp_df.reset_index(inplace=True)
-        tmp_df=pd.melt(tmp_df, id_vars=['train_sub'], value_vars=['Same Subject','Different Subject'],var_name='Analysis',value_name='acc')
-        tmp_df['Network_A']=i
-        tmp_df['Network_B']=i
-        finalDF=pd.concat([finalDF, tmp_df])
-    finalDF.to_csv(thisDir+'output/results/acc/ALL/Net2Net_acc.csv')
 
-def subNetAll():
+def blockNetAll():
     netDF=pd.DataFrame(netComb, columns=['Network_A','Network_B'])
     finalDF=pd.DataFrame()
-    for index, row in netDF.iterrows():
+    for index, row in netDF.iterrows(): #between networks
         tmp_df=classifyAll(network=row['Network_A'], subnetwork=row['Network_B'])
         tmp_df=tmp_df.groupby(['train_sub']).mean()
         tmp_df.rename(columns={'cv_acc':'Same Subject','acc':'Different Subject'},inplace=True)
@@ -72,7 +51,16 @@ def subNetAll():
         tmp_df['Network_A']=row['Network_A']
         tmp_df['Network_B']=row['Network_B']
         finalDF=pd.concat([finalDF, tmp_df])
-    finalDF.to_csv(thisDir+'output/results/acc/ALL/subNetwork_acc.csv')
+    for i in networks: #within networks
+        tmp_df=classifyAll(network=i,subnetwork=i)
+        tmp_df=tmp_df.groupby(['train_sub']).mean()
+        tmp_df.rename(columns={'cv_acc':'Same Subject','acc':'Different Subject'},inplace=True)
+        tmp_df.reset_index(inplace=True)
+        tmp_df=pd.melt(tmp_df, id_vars=['train_sub'], value_vars=['Same Subject','Different Subject'],var_name='Analysis',value_name='acc')
+        tmp_df['Network_A']=i
+        tmp_df['Network_B']=i
+        finalDF=pd.concat([finalDF, tmp_df])
+    finalDF.to_csv(thisDir+'ALL_Binary/blockNet_acc.csv')
 def classifyAll(network,subnetwork=None):
     """
     Classifying different subjects along available data rest split into 40 samples to match with task
@@ -93,10 +81,9 @@ def classifyAll(network,subnetwork=None):
         diff_score, same_score=modelAll(network,subnetwork,train_sub=row['train_sub'], test_sub=row['test_sub'])
         acc_scores_per_sub.append(diff_score)
         acc_scores_cv.append(same_score)
-    df['cv_acc']=acc_scores_cv
-    df['acc']=acc_scores_per_sub
+    df['same_sub']=acc_scores_cv
+    df['diff_sub']=acc_scores_per_sub
     return df
-    #df.to_csv(outDir+'acc/ALL/precision_acc.csv',index=False)
 
 def modelAll(network,subnetwork,train_sub, test_sub):
     """
@@ -158,13 +145,6 @@ def K_folds(netSize,train_sub, clf, memFC,semFC,glassFC,motFC, restFC, test_task
         List of accuracy for each outer fold
     """
     loo = LeaveOneOut()
-    #kf = KFold(n_splits=5,shuffle=True)
-    """
-    taskSize=taskFC.shape[0]
-    restSize=restFC.shape[0]
-    t = np.ones(taskSize, dtype = int)
-    r=np.zeros(restSize, dtype=int)
-    """
     test_taskSize=test_taskFC.shape[0]
     test_restSize=test_restFC.shape[0]
     testT= np.ones(test_taskSize, dtype = int)
@@ -175,14 +155,8 @@ def K_folds(netSize,train_sub, clf, memFC,semFC,glassFC,motFC, restFC, test_task
     df=pd.DataFrame()
     DSacc=[]
     #fold each training set
-    if train_sub=='MSC03':
-        split=np.empty((8,netSize))
-        #xtrainSize=24
-        #xtestSize=4
-    elif train_sub=='MSC06' or train_sub=='MSC07':
-        split=np.empty((9,netSize))
-    else:
-        split=np.empty((10,netSize))
+    session=splitDict[train_sub]
+    split=np.empty((session, 55278))
     for train_index, test_index in loo.split(split):
         memtrain, memval=memFC[train_index], memFC[test_index]
         semtrain, semval=semFC[train_index], semFC[test_index]
@@ -211,8 +185,6 @@ def K_folds(netSize,train_sub, clf, memFC,semFC,glassFC,motFC, restFC, test_task
         #get accuracy
         CV_score=clf.score(X_val, y_val)
         CVacc.append(CV_score)
-        #tmpdf=pd.DataFrame()
-        #acc_scores_per_fold=[]
         #fold each testing set
         scaler.transform(Xtest)
         DS_score=clf.score(Xtest,ytest)
@@ -222,43 +194,7 @@ def K_folds(netSize,train_sub, clf, memFC,semFC,glassFC,motFC, restFC, test_task
     return diff_sub_score, same_sub_score
 
 
-
-def CVNet2Net():
-    netDF=pd.DataFrame(netComb, columns=['Network_A','Network_B'])
-    finalDF=pd.DataFrame()
-    #for index, row in netDF.iterrows():
-    #    tmp_df=classifyCV_Net2Net(network=row['Network_A'], subnetwork=row['Network_B'])
-    #    tmp_df['Network_A']=row['Network_A']
-    #    tmp_df['Network_B']=row['Network_B']
-    #    finalDF=pd.concat([finalDF, tmp_df])
-    for i in networks:
-        tmp_df=classifyCV_Net2Net(network=i,subnetwork=i)
-        tmp_df['Network_A']=i
-        tmp_df['Network_B']=i
-        finalDF=pd.concat([finalDF, tmp_df])
-    finalDF.to_csv(thisDir+'output/results/acc/CV/Net2Net.csv')
-    #finalDF.to_csv(thisDir+'output/results/acc/CV/subNetwork_acc.csv')
-
-def classifyCV_Net2Net(network,subnetwork=None):
-    dfCV=pd.DataFrame(CVvars, columns=['sub','task'])
-    clf=RidgeClassifier()
-    acc_scores_per_task=[]
-    for index, row in dfCV.iterrows():
-        taskFC=reshape.network_to_network(dataDir+row['task']+'/'+row['sub']+'_parcel_corrmat.mat',network,subnetwork)
-        restFC=reshape.network_to_network(dataDir+'rest/'+row['sub']+'_parcel_corrmat.mat',network,subnetwork)
-        folds=taskFC.shape[0]
-        x_train, y_train=reshape.concateFC(taskFC, restFC)
-        CVscores=cross_val_score(clf, x_train, y_train, cv=folds)
-        mu=CVscores.mean()
-        acc_scores_per_task.append(mu)
-    #average acc per sub per tasks
-    dfCV['acc']=acc_scores_per_task
-    return dfCV
-    #dfCV.to_csv(outDir+network+'_'+subnetwork+'/CV/acc.csv')
-
-
-
-def DSNet2Net():
+def blockNetDS():
     """
     Classifying different subjects (DS) along the same task
 
@@ -274,15 +210,19 @@ def DSNet2Net():
     """
     netDF=pd.DataFrame(netComb, columns=['Network_A','Network_B'])
     finalDF=pd.DataFrame()
-    for i in networks:
-        tmp_df=classifyDS_Net2Net(network=i,subnetwork=i)
+    for i in networks:#within network
+        tmp_df=classifyDS(network=i,subnetwork=i)
         tmp_df['Network_A']=i
         tmp_df['Network_B']=i
         finalDF=pd.concat([finalDF, tmp_df])
-        print(i)
-    finalDF.to_csv(thisDir+'output/results/acc/DS/Net2Net.csv')
+    for index, row in netDF.iterrows(): #between networks
+        tmp_df=classifyDS(network=row['Network_A'], subnetwork=row['Network_B'])
+        tmp_df['Network_A']=row['Network_A']
+        tmp_df['Network_B']=row['Network_B']
+        finalDF=pd.concat([finalDF, tmp_df])
+    finalDF.to_csv(outDir+'single_task/blockNet_acc.csv')
 
-def classifyDS_Net2Net(network,subnetwork=None):
+def classifyDS(network,subnetwork=None):
     clf=RidgeClassifier()
     DS=pd.DataFrame()
     data=np.array(['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'],dtype='<U61')

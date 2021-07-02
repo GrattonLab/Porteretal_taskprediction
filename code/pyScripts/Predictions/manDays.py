@@ -2,8 +2,6 @@
 # coding: utf-8
 
 # In[ ]:
-
-
 import reshape
 import os
 import sys
@@ -15,14 +13,14 @@ from sklearn.linear_model import RidgeClassifier
 from sklearn.model_selection import LeaveOneOut
 #from sklearn.model_selection import KFold
 subList=['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10']
-thisDir = os.path.expanduser('~/Desktop/MSC_Alexis/analysis/')
+thisDir = os.path.expanduser('~/Desktop/Porteretal_taskprediction/')
 splitDict=dict([('MSC01',10),('MSC02',10),('MSC03',8),('MSC04',10),('MSC05',10),('MSC06',9),('MSC07',9),('MSC10',10)])
 dataDir = thisDir + 'data/corrmats/'
 outDir = thisDir + 'output/results/'
 subsComb=(list(itertools.permutations(subList, 2)))
 taskList=['glass','semantic', 'motor','mem']
 
-def classifyAll(classifier):
+def classifyAll():
     """
     Classifying different subjects along available data rest split into 40 samples to match with task
 
@@ -42,8 +40,7 @@ def classifyAll(classifier):
         days=i*4 #gives up number of samples, 4 tasks so always pairs of 4
         tmp_df['Days']=days
         allDay=pd.concat([allDay, tmp_df])
-    allDay.to_csv(outDir+classifier+'/ALL_Binary/manDays.csv',index=False)
-    #return allDay
+    return allDay
 def modelAll(i):
     """
     Preparing machine learning model with appropriate data

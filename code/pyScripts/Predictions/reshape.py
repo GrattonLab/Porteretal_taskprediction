@@ -101,7 +101,7 @@ def network_to_network(df='path', networkA='networkA',networkB='networkB'):
     dsNet_count=0
     for sess in range(nsess):
         ds=fileFC[:,:,sess]
-        Parcel_params = loadParcelParams('Gordon333','/Users/Alexis/Desktop/MSC_Alexis/analysis/data/Parcel_info/')
+        Parcel_params = loadParcelParams('Gordon333')
         roi_sort = np.squeeze(Parcel_params['roi_sort'])
         corrmat=ds[roi_sort,:][:,roi_sort]
         nrois=list(range(333))
@@ -135,12 +135,12 @@ def network_to_network(df='path', networkA='networkA',networkB='networkB'):
 
 
 def determineNetSize(networkA,networkB):
-    df=thisDir+'data/mvpa_data/mem/MSC01_parcel_corrmat.mat' #use as temp for knowing size
+    df=dataDir+'mem/MSC01_parcel_corrmat.mat' #use as temp for knowing size
     fileFC=scipy.io.loadmat(df)
     fileFC=np.array(fileFC['parcel_corrmat'])
     fileFC=np.nan_to_num(fileFC)
     ds=fileFC[:,:,0]
-    Parcel_params =loadParcelParams('Gordon333','/Users/Alexis/Desktop/MSC_Alexis/analysis/data/Parcel_info/')
+    Parcel_params =loadParcelParams('Gordon333')
     roi_sort = np.squeeze(Parcel_params['roi_sort'])
     corrmat=ds[roi_sort,:][:,roi_sort]
     nrois=list(range(333))
@@ -210,7 +210,7 @@ def subNets(df='path', networkLabel='networklabel',otherNets=None):
     dsNet_count=0
     for sess in range(nsess):
         ds=fileFC[:,:,sess]
-        Parcel_params = loadParcelParams('Gordon333',thisDir+'data/Parcel_info/')
+        Parcel_params = loadParcelParams('Gordon333')
         roi_sort = np.squeeze(Parcel_params['roi_sort'])
         corrmat=ds[roi_sort,:][:,roi_sort]
         nrois=list(range(333))
@@ -281,7 +281,7 @@ def btwBlock(df='path'):
     dsNet_count=0
     for sess in range(nsess):
         ds=fileFC[:,:,sess]
-        Parcel_params = loadParcelParams('Gordon333',thisDir+'data/Parcel_info/')
+        Parcel_params = loadParcelParams('Gordon333')
         roi_sort = np.squeeze(Parcel_params['roi_sort'])
         corrmat=ds[roi_sort,:][:,roi_sort]
         nrois=list(range(333))
@@ -347,7 +347,7 @@ def subBlock(df='path'):
     dsNet_count=0
     for sess in range(nsess):
         ds=fileFC[:,:,sess]
-        Parcel_params = loadParcelParams('Gordon333',thisDir+'data/Parcel_info/')
+        Parcel_params = loadParcelParams('Gordon333')
         roi_sort = np.squeeze(Parcel_params['roi_sort'])
         corrmat=ds[roi_sort,:][:,roi_sort]
         nrois=list(range(333))
@@ -403,7 +403,7 @@ def randFeats(df, idx):
         featDS[sess]=f
     return featDS
 
-def loadParcelParams(roiset,datadir):
+def loadParcelParams(roiset):
     """ This function loads information about the ROIs and networks.
     For now, this is only set up to work with 333 Gordon 2014 Cerebral Cortex regions
     Inputs:
@@ -413,6 +413,7 @@ def loadParcelParams(roiset,datadir):
     Parcel_params: a dictionary with ROI information stored in it
     """
     import scipy.io as spio
+    datadir=thisDir+'data/Parcel_info/'
     #initialize a dictionary where info will be stored
     Parcel_params = {}
 
@@ -524,7 +525,7 @@ def permute_importance(df, network):
     dsNet_count=0
     for sess in range(nsess):
         ds=fileFC[:,:,sess]
-        Parcel_params = loadParcelParams('Gordon333','/Users/Alexis/Desktop/MSC_Alexis/analysis/data/Parcel_info/')
+        Parcel_params = loadParcelParams('Gordon333')
         roi_sort = np.squeeze(Parcel_params['roi_sort'])
         corrmat=ds[roi_sort,:][:,roi_sort]
         nrois=list(range(333))
@@ -615,7 +616,7 @@ def permROI(df='path'):
     dsNet_count=0
     for sess in range(nsess):
         ds=fileFC[:,:,sess]
-        Parcel_params = loadParcelParams('Gordon333',thisDir+'data/Parcel_info/')
+        Parcel_params = loadParcelParams('Gordon333')
         roi_sort = np.squeeze(Parcel_params['roi_sort'])
         corrmat=ds[roi_sort,:][:,roi_sort]
         nrois=list(range(333))
@@ -666,7 +667,7 @@ def getIndices():
     fileFC=np.array(fileFC['parcel_corrmat'])
     fileFC=np.nan_to_num(fileFC)
     ds=fileFC[:,:,0]
-    Parcel_params = loadParcelParams('Gordon333',thisDir+'data/Parcel_info/')
+    Parcel_params = loadParcelParams('Gordon333')
     roi_sort = np.squeeze(Parcel_params['roi_sort'])
     corrmat=ds[roi_sort,:][:,roi_sort]
     nrois=list(range(333))
