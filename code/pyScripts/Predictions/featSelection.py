@@ -37,12 +37,9 @@ import os
 import sys
 import reshape
 from statistics import mean
-#import other python scripts for further anlaysis
-# Initialization of directory information:
-#thisDir = os.path.expanduser('~/Desktop/MSC_Alexis/analysis/')
-thisDir = os.path.expanduser('~/Desktop/MSC_Alexis/analysis/')
-dataDir = thisDir + 'data/mvpa_data/'
-outDir = thisDir + 'output/results/subNetwork/'
+thisDir = os.path.expanduser('~/Desktop/Porteretal_taskprediction/')
+dataDir = thisDir +'data/corrmats/'
+outDir = thisDir + 'output/results/Ridge/'
 # Subjects and tasks
 taskList=['semantic','glass', 'motor','mem']
 subList=['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10']

@@ -35,7 +35,7 @@ def rdmNet_DS():
             DS['feature']=number
             DS_df=pd.concat([DS_df,DS])
         print('Finished with '+str(i)+' in iteration 100')
-    DS_df.to_csv(outDir+'single_task/rdmNet.csv', index=False)
+    DS_df.to_csv(outDir+'single_task/rdmNet_acc.csv', index=False)
 
 
 
@@ -49,7 +49,7 @@ def rdmNet_classifyAll():
             ALL=modelAll(idx, number)
             ALL_df=pd.concat([ALL_df,ALL])
         print('Finished with '+str(i)+ ' log sample out of 39')
-    ALL_df.to_csv(outDir+'ALL_Binary/rdmNet.csv', index=False)
+    ALL_df.to_csv(outDir+'ALL_Binary/rdmNet_acc.csv', index=False)
 
 def AllSubFiles(test_sub,feat):
     """
