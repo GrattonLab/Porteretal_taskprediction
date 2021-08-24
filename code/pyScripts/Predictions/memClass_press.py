@@ -113,20 +113,15 @@ def classifydiffMem(classifier='string'):
     OS_RPV_per_task=[]
     tmp_SS=pd.DataFrame(SSvars, columns=['sub','task'])
     tmp_BS=pd.DataFrame(BSvars, columns=['sub','task'])
-    dfBS=pd.DataFrame()
-    dfBS[['train_task','test_task']]=pd.DataFrame(tmp_BS['task'].tolist())
-    dfBS[['train_sub', 'test_sub']]=pd.DataFrame(tmp_BS['sub'].tolist())
+    dfDS=pd.DataFrame()
+    dfDS[['train_task','test_task']]=pd.DataFrame(tmp_BS['task'].tolist())
+    dfDS[['train_sub', 'test_sub']]=pd.DataFrame(tmp_BS['sub'].tolist())
 
-    dfSS=pd.DataFrame()
-    dfSS[['train_task','test_task']]=pd.DataFrame(tmp_SS['task'].tolist())
-    dfSS[['train_sub']]=pd.DataFrame(tmp_SS['sub'].tolist())
-    dfSS['test_sub']=dfSS['train_sub']
-    dfDS=pd.concat([dfBS,dfSS])
     for index, row in dfDS.iterrows():
         taskFC=reshape.matFiles(dataDir+'mem/'+row['train_task']+'/'+row['train_sub']+'_parcel_corrmat.mat')
-        restFC=reshape.matFiles(dataDir+'rest/'+row['train_sub']+'_parcel_corrmat.mat')
-        test_taskFC=reshape.matFiles(dataDir+'mem/'+row['test_task']+'/'+row['test_sub']+'_parcel_corrmat.mat')
-        test_restFC=reshape.matFiles(dataDir+'rest/'+row['test_sub']+'_parcel_corrmat.mat')
+        restFC=reshape.matFiles(dataDir+'mem/'+row['test_task']+'/'+row['train_sub']+'_parcel_corrmat.mat')
+        test_taskFC=reshape.matFiles(dataDir+'mem/'+row['train_task']+'/'+row['test_sub']+'_parcel_corrmat.mat')
+        test_restFC=reshape.matFiles(dataDir+'mem/'+row['test_task']+'/'+row['test_sub']+'_parcel_corrmat.mat')
         SSacc, SS_TPV, SS_RPV, OSacc, OS_TPV, OS_RPV=folds(clf, taskFC, restFC, test_taskFC, test_restFC)
         same_sub_per_task.append(SSacc)
         SS_TPV_per_task.append(SS_TPV)
@@ -140,7 +135,7 @@ def classifydiffMem(classifier='string'):
     dfDS['OS_RPV']=OS_RPV_per_task
     dfDS['SS_TPV']=SS_TPV_per_task
     dfDS['SS_RPV']=SS_RPV_per_task
-    dfDS.to_csv(outDir+classifier+'/single_task/sep_mem_pres_acc.csv',index=False)
+    dfDS.to_csv(outDir+classifier+'/single_task/sep_mem_pres_accCG.csv',index=False)
 def folds(clf,taskFC, restFC, test_taskFC, test_restFC):
     """
     Cross validation to train and test using nested loops
