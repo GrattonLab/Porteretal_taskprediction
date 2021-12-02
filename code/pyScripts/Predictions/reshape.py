@@ -784,6 +784,42 @@ def AllSubFiles(test_sub):
 
     return taskFC, restFC
 
+def AllSubFiles_groupavg(test_sub, task):
+    """
+    Return task and rest FC all subs
+    Parameters
+    -----------
+    test_sub: Array of testing subs
+    Returns
+    ------------
+    taskFC, restFC : Array of task and rest FC of all testing subs
+    """
+    a_memFC=matFiles(dataDir+task+'/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_restFC=matFiles(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat')
+
+    b_memFC=matFiles(dataDir+task+'/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_restFC=matFiles(dataDir+'rest/'+test_sub[1]+'_parcel_corrmat.mat')
+
+    c_memFC=matFiles(dataDir+task+'/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_restFC=matFiles(dataDir+'rest/'+test_sub[2]+'_parcel_corrmat.mat')
+
+    d_memFC=matFiles(dataDir+task+'/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_restFC=matFiles(dataDir+'rest/'+test_sub[3]+'_parcel_corrmat.mat')
+
+    e_memFC=matFiles(dataDir+task+'/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_restFC=matFiles(dataDir+'rest/'+test_sub[4]+'_parcel_corrmat.mat')
+
+    f_memFC=matFiles(dataDir+task+'/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_restFC=matFiles(dataDir+'rest/'+test_sub[5]+'_parcel_corrmat.mat')
+
+    g_memFC=matFiles(dataDir+task+'/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_restFC=matFiles(dataDir+'rest/'+test_sub[6]+'_parcel_corrmat.mat')
+
+
+    taskFC=np.concatenate((a_memFC,b_memFC,c_memFC,d_memFC,e_memFC,f_memFC,g_memFC))
+    restFC=np.concatenate((a_restFC,b_restFC,c_restFC,d_restFC,e_restFC,f_restFC,g_restFC))
+
+    return taskFC, restFC
 
 def permuteIndicesRandom(Xtrain_task,Xtrain_rest,network):
     """
