@@ -662,7 +662,7 @@ def getIndices():
     dsNet : Array of task or rest FC with only blocks
     """
  #roi count for building arrays
-    df='/Users/Alexis/Desktop/MSC_Alexis/analysis/data/mvpa_data/mem/MSC01_parcel_corrmat.mat' #temp file for getting indices
+    df=dataDir +'mem/MSC01_parcel_corrmat.mat' #temp file for getting indices
     fileFC=scipy.io.loadmat(df)
     fileFC=np.array(fileFC['parcel_corrmat'])
     fileFC=np.nan_to_num(fileFC)
