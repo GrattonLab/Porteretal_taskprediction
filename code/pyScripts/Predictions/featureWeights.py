@@ -67,7 +67,7 @@ def classifyCV(sub, task):
     df=pd.DataFrame(data)
     df.sort_values(by='roi',inplace=True)
     array=df['acc'].to_numpy()
-    array.tofile(outDir+'single_task/fw/'+sub+'.csv', sep = ',')
+    array.tofile(outDir+'single_task/fw/'+sub+'_'+task+'.csv', sep = ',')
 
 
 
