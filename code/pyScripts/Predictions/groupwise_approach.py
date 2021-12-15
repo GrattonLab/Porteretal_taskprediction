@@ -10,6 +10,7 @@ import os
 import sys
 import pandas as pd
 from statistics import mean
+import masterClass
 import itertools
 #import other python scripts for further anlaysis
 import reshape
@@ -21,6 +22,8 @@ dataDir = thisDir +'data/corrmats/'
 outDir = thisDir + 'output/results/Ridge/'
 # Subjects and tasks
 taskList=['glass','semantic', 'motor','mem']
+
+menList=['pres1','pres2','pres3']
 #Only using subs with full 10 sessions
 subList=['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10']
 #all possible combinations of subs and tasks
@@ -415,3 +418,142 @@ def folds(clf,taskFC, restFC, test_taskFC, test_restFC):
     OStotal_acc=mean(OS_acc)
     SStotal_acc=mean(SS_acc)
     return SStotal_acc, OStotal_acc
+
+
+def increment():
+    incList = []
+    for i in range(1,9):
+        tmp = incremental_groupApp_LOSO(i)
+        tmp['sample_per_sub']=i
+        incList.append(tmp)
+        print('Now done with increment ' +str(i))
+    df = pd.concat(incList, axis=0)
+    df.to_csv(outDir+'single_task/incremental_groupavg.csv',index=False)
+
+
+
+def incremental_groupApp_LOSO(sample):
+    """
+    Classifying using all subs testing unseen sub on same task
+    Parameters
+    -------------
+
+
+    Returns
+    -------------
+    dfGroup : DataFrame
+        Dataframe consisting of group average accuracy training with subs instead of session
+
+    """
+    acc_scores_per_task=[]
+    dfGroup=pd.DataFrame(taskList, columns=['task'])
+    for task in taskList:
+        score=incremental_model_LOSO(sample,task)
+        acc_scores_per_task.append(score)
+    dfGroup['acc']=acc_scores_per_task
+    #save accuracy
+    return dfGroup
+
+def incremental_model_LOSO(sample,train_task):
+    """
+    Train on all sessions, leave one subject out
+
+    Parameters
+    -------------
+    train_task : str
+            Task name for training
+    test_task : str
+            Task name for testing
+
+    Returns
+    -------------
+    within_score : float
+            Average accuracy of all folds leave one sub out of a given task
+    btn_score : float
+            Average accuracy of all folds leave one sub out of a given task
+
+    """
+
+    clf=RidgeClassifier()
+    loo = LeaveOneOut()
+    cv_scoreList =[]
+    data=np.array(['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'],dtype='<U61')
+    for  train, test in loo.split(data): #test on one sub train on all subs
+        train_subs = data[train]
+        test_sub = data[test]
+        test_task = reshape.matFiles(dataDir+train_task+'/'+test_sub[0]+'_parcel_corrmat.mat')
+        test_rest = reshape.matFiles(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat')
+        task, rest = reshape.incremental_AllSubFiles_groupavg(train_subs, train_task,sample)
+        #training set
+        taskSize=task.shape[0]
+        restSize=rest.shape[0]
+        t = np.ones(taskSize, dtype = int)
+        r=np.zeros(restSize, dtype=int)
+        x_train=np.concatenate((task,rest))
+        y_train=np.concatenate((t,r))
+        #testing set (left out sub CV)
+        test_taskSize=test_task.shape[0]
+        test_restSize=test_rest.shape[0]
+        test_t = np.ones(test_taskSize, dtype = int)
+        test_r=np.zeros(test_restSize, dtype=int)
+        x_test=np.concatenate((test_task, test_rest))
+        y_test=np.concatenate((test_t,test_r))
+        #test left out sub 10 sessions
+        clf.fit(x_train,y_train)
+        ACCscores=clf.score(x_test,y_test)
+        cv_scoreList.append(ACCscores)
+    cv_score = mean(cv_scoreList)
+    return cv_score
+
+
+
+
+def multiclassAll():
+    """
+    Preparing machine learning model with appropriate data
+
+    Parameters
+    -------------
+    train_sub : str
+            Subject name for training
+    test_sub : str
+            Subject name for testing
+
+    Returns
+    -------------
+    total_score : float
+            Average accuracy of all folds
+
+    """
+    clf=RidgeClassifier()
+    #train sub
+    master_df=pd.DataFrame()
+    data=np.array(['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'],dtype='<U61')
+    loo = LeaveOneOut()
+    all_acc=[]
+    test_sub_acc=[]
+    for  train,test in loo.split(data): #test on one sub train on the rest
+        CV_tmp=pd.DataFrame()
+        train_sub=data[train]
+        test_sub=data[test]
+    #test sub
+        memFC=reshape.matFiles(dataDir+'mem/'+test_sub[0]+'_parcel_corrmat.mat')
+        semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[0]+'_parcel_corrmat.mat')
+        glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[0]+'_parcel_corrmat.mat')
+        motFC=reshape.matFiles(dataDir+'motor/'+test_sub[0]+'_parcel_corrmat.mat')
+        restFC=reshape.matFiles(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat') #keep tasks seperated in order to collect the right amount of days
+        yrest=np.zeros(restFC.shape[0])
+        ymem=np.ones(memFC.shape[0])
+        ysem=np.full(semFC.shape[0],2)
+        yglass=np.full(glassFC.shape[0],3)
+        ymot=np.full(motFC.shape[0],4)
+        Xtest=np.concatenate((restFC,memFC,semFC,motFC,glassFC))
+        ytest=np.concatenate((yrest,ymem,ysem,ymot,yglass))
+        Xtrain,ytrain=masterClass.AllSubFiles(train_sub)
+        clf.fit(Xtrain,ytrain)
+        score=clf.score(Xtest, ytest)
+        all_acc.append(score)
+        test_sub_acc.append(test_sub[0])
+    master_df['acc']=all_acc
+    master_df['test_sub']=test_sub_acc
+    master_df.to_csv(outDir+'ALL_MC/groupwise_acc.csv',index=False)

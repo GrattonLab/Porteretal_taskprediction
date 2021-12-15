@@ -8,7 +8,7 @@ from sklearn.linear_model import RidgeClassifier
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
-from sklearn.metrics import ConfusionMatrixDisplay
+#from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import os

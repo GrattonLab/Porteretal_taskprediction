@@ -816,10 +816,104 @@ def AllSubFiles_groupavg(test_sub, task):
     g_restFC=matFiles(dataDir+'rest/'+test_sub[6]+'_parcel_corrmat.mat')
 
 
+
     taskFC=np.concatenate((a_memFC,b_memFC,c_memFC,d_memFC,e_memFC,f_memFC,g_memFC))
     restFC=np.concatenate((a_restFC,b_restFC,c_restFC,d_restFC,e_restFC,f_restFC,g_restFC))
 
     return taskFC, restFC
+
+
+def incremental_AllSubFiles_groupavg(test_sub, task,size):
+    """
+    Return task and rest FC all subs
+    Parameters
+    -----------
+    test_sub: Array of testing subs
+    Returns
+    ------------
+    taskFC, restFC : Array of task and rest FC of all testing subs
+    """
+    a_memFC=matFiles(dataDir+task+'/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_restFC=matFiles(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat')
+    number_of_rows = a_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    a_memFC = a_memFC[random_indices, :]
+
+    number_of_rows = a_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    a_restFC = a_restFC[random_indices, :]
+
+    b_memFC=matFiles(dataDir+task+'/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_restFC=matFiles(dataDir+'rest/'+test_sub[1]+'_parcel_corrmat.mat')
+
+    number_of_rows = b_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    b_memFC = b_memFC[random_indices, :]
+
+    number_of_rows = b_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    b_restFC = b_restFC[random_indices, :]
+
+    c_memFC=matFiles(dataDir+task+'/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_restFC=matFiles(dataDir+'rest/'+test_sub[2]+'_parcel_corrmat.mat')
+
+    number_of_rows = c_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    c_memFC = c_memFC[random_indices, :]
+
+    number_of_rows = c_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    c_restFC = c_restFC[random_indices, :]
+
+    d_memFC=matFiles(dataDir+task+'/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_restFC=matFiles(dataDir+'rest/'+test_sub[3]+'_parcel_corrmat.mat')
+
+    number_of_rows = d_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    d_memFC = d_memFC[random_indices, :]
+
+    number_of_rows = d_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    d_restFC = d_restFC[random_indices, :]
+
+    e_memFC=matFiles(dataDir+task+'/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_restFC=matFiles(dataDir+'rest/'+test_sub[4]+'_parcel_corrmat.mat')
+
+    number_of_rows = e_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    e_memFC = e_memFC[random_indices, :]
+
+    number_of_rows = e_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    e_restFC = e_restFC[random_indices, :]
+
+    f_memFC=matFiles(dataDir+task+'/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_restFC=matFiles(dataDir+'rest/'+test_sub[5]+'_parcel_corrmat.mat')
+
+    number_of_rows = f_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    f_memFC = f_memFC[random_indices, :]
+
+    number_of_rows = f_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    f_restFC = f_restFC[random_indices, :]
+
+    g_memFC=matFiles(dataDir+task+'/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_restFC=matFiles(dataDir+'rest/'+test_sub[6]+'_parcel_corrmat.mat')
+
+    number_of_rows = g_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    g_memFC = g_memFC[random_indices, :]
+
+    number_of_rows = g_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    g_restFC = g_restFC[random_indices, :]
+
+    taskFC=np.concatenate((a_memFC,b_memFC,c_memFC,d_memFC,e_memFC,f_memFC,g_memFC))
+    restFC=np.concatenate((a_restFC,b_restFC,c_restFC,d_restFC,e_restFC,f_restFC,g_restFC))
+
+    return taskFC, restFC
+
 
 def permuteIndicesRandom(Xtrain_task,Xtrain_rest,network):
     """
