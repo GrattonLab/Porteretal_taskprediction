@@ -1,0 +1,57 @@
+---
+title: "mL Project"
+author: "Alexis Porter"
+date: "12/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(tidyverse)
+
+data <- read.csv(file = "/Users/aporter1350/Desktop/Porteretal_taskprediction/output/results/Ridge/single_task/r_format_across_task_acc.csv") %>%
+  mutate(Analysis = factor(Analysis, 
+                         levels = c("Same Person", "Different Person")),
+    train_task = factor(train_task,
+                     levels = c("motor","glass","mem", "semantic"),
+                     labels = c("Motor","Coherence","Memory", "Semantic")),
+    test_task = factor(test_task,
+                 levels = c("motor","glass","mem", "semantic"),
+                 labels = c("Motor","Coherence","Memory", "Semantic")))
+
+sub_data <- dplyr::select(data, -Analysis)
+```
+
+## Grayscale
+
+```{r}
+ggplot(data, aes(test_task, acc), size = 1) +
+  geom_point(data = sub_data, colour = "gray85") +
+  geom_point(aes(colour = Analysis), show.legend = FALSE) +
+  scale_y_continuous(
+  name = "Accuracy %",
+  limits = c(0,1.1),
+  breaks = seq(0,1,.25) 
+  ) +
+scale_x_discrete(
+  name = "Test Task"
+) +
+  scale_color_manual(labels = c("Same Person", "Different Person"), values = c("#D55E00D0", "#0072B2D0")) +
+  facet_grid(Analysis~train_task) +
+  theme(panel.spacing = unit(2, "lines")) +
+  theme_minimal()
+  
+  
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
