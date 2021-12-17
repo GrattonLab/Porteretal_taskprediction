@@ -33,12 +33,13 @@ subsComb=(list(itertools.permutations(subList, 2)))
 tasksComb=(list(itertools.combinations(taskList, 2)))
 
 task=['glass','semantic', 'motor','mem']
-tasksPerm=(list(itertools.permutations(task, 2)))
+task_sep_Perm=(list(itertools.permutations(task, 2)))
 
-btw=list(itertools.product(list(subsComb),list(tasksPerm))) #diff sub diff task
-wtn = list(itertools.product(list(subList),list(tasksPerm)))
+btw=list(itertools.product(list(subsComb),list(task_sep_Perm))) #diff sub diff task
+wtn = list(itertools.product(list(subList),list(task_sep_Perm)))
 
-tasksPerm=(list(itertools.permutations(taskList, 2)))
+tasksPerm=(list(itertools.combinations(taskList, 2)))
+
 DSvars=list(itertools.product(list(subsComb),list(taskList)))
 splitDict=dict([('MSC01',10),('MSC02',10),('MSC03',8),('MSC04',10),('MSC05',10),('MSC06',9),('MSC07',9),('MSC10',10)])
 taskDict=dict([('mem',0),('motor',1),('glass',2),('semantic',3)])
@@ -154,11 +155,11 @@ def groupApp():
     btw_scores = []
     dfGroup=pd.DataFrame(tasksPerm, columns=['train_task','test_task'])
     for index, row in dfGroup.iterrows():
-        wtn_acc, btw_acc=model(row['train_task'], row['test_task'])
+        wtn_acc=model(row['train_task'], row['test_task'])
         wtn_scores.append(wtn_acc)
-        btw_scores.append(btw_acc)
-    dfGroup['wtn']=wtn_scores
-    dfGroup['groupwise']=btw_scores
+        #btw_scores.append(btw_acc)
+    dfGroup['groupwise']=wtn_scores
+    #dfGroup['groupwise']=btw_scores
     #save accuracy
     dfGroup.to_csv(outDir+'Ridge/single_task/memPres_groupwise_acc.csv',index=False)
 
@@ -192,15 +193,15 @@ def model(train_task, test_task):
         #training task
         tmp_taskFC=reshape.matFiles(dataDir+'mem/'+train_task+'/'+sub+'_parcel_corrmat.mat')
         tmp_taskFC=tmp_taskFC[:8,:]
-        tmp_restFC=reshape.matFiles(dataDir+'rest/'+sub+'_parcel_corrmat.mat')
+        tmp_restFC=reshape.matFiles(dataDir+'mem/'+test_task+'/'+sub+'_parcel_corrmat.mat')
         tmp_restFC=tmp_restFC[:8,:]
         #reshape 2d into 3d nsessxfcxnsubs
         ds_T[:,:,count]=tmp_taskFC
         ds_R[:,:,count]=tmp_restFC
         #testing task
-        test_taskFC=reshape.matFiles(dataDir+'mem/'+test_task+'/'+sub+'_parcel_corrmat.mat')
-        test_taskFC=test_taskFC[:8,:]
-        ds_Test[:,:,count]=test_taskFC
+        #test_taskFC=reshape.matFiles(dataDir+'mem/'+test_task+'/'+sub+'_parcel_corrmat.mat')
+        #test_taskFC=test_taskFC[:8,:]
+        #ds_Test[:,:,count]=test_taskFC
         count=count+1
     sess_wtn_score=[]
     sess_btn_score=[]
@@ -231,7 +232,7 @@ def model(train_task, test_task):
             #XNew_test_task, yNew_test_task = testFC[test_index], yTest[test_index]
             #Xval is the new task 10 sessions
             #just the left out sub data
-            testFC=ds_Test[:,:,test_index[0]]
+            #testFC=ds_Test[:,:,test_index[0]]
             ytrain_rest,ytest_rest=r[train_index], r[test_index]
             ytrain_task,ytest_task=t[train_index], t[test_index]
             X_tr=np.concatenate((Xtrain_task, Xtrain_rest))
@@ -242,16 +243,16 @@ def model(train_task, test_task):
             ACCscores=clf.score(X_test,ytest)
             sess_wtn_score.append(ACCscores)
             #testSize=testFC.shape[0]
-            y_val= np.ones(testFC.shape[0], dtype = int)
+            #y_val= np.ones(testFC.shape[0], dtype = int)
             #test unseen sub new task all 10 sessions
             #y_pre_val=clf.predict(testFC)
-            btn_score=clf.score(testFC, y_val)
-            sess_btn_score.append(btn_score)
+            #btn_score=clf.score(testFC, y_val)
+            #sess_btn_score.append(btn_score)
     wtn_score=mean(sess_wtn_score)
     #df['btn_fold']=btn_scoreList
-    btn_score=mean(sess_btn_score)
+    #btn_score=mean(sess_btn_score)
     #return wtn_scoreList
-    return wtn_score, btn_score
+    return wtn_score#, btn_score
 
 
 
