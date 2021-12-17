@@ -557,3 +557,130 @@ def multiclassAll():
     master_df['acc']=all_acc
     master_df['test_sub']=test_sub_acc
     master_df.to_csv(outDir+'ALL_MC/groupwise_acc.csv',index=False)
+
+
+
+
+
+
+def classifyAll():
+    """
+    Classifying different subjects along available data rest split into 40 samples to match with task
+
+    Parameters
+    -------------
+
+    Returns
+    -------------
+    df : DataFrame
+        Dataframe consisting of average accuracy across all subjects
+
+    """
+    clf=RidgeClassifier()
+    acc_scores_OS=[]
+    acc_scores_SS=[]
+    df=pd.DataFrame(subsComb, columns=['train_sub','test_sub'])
+    for index, row in df.iterrows():
+        SS_score,OS_score=modelAll_binary(clf,train_sub=row['train_sub'], test_sub=row['test_sub'])
+        acc_scores_SS.append(SS_score)
+        acc_scores_OS.append(OS_score)
+    df['same_sub']=acc_scores_SS
+    df['diff_sub']=acc_scores_OS
+    df.to_csv(outDir+'ALL_Binary/matched_acc.csv',index=False)
+
+
+def modelAll_binary(clf,train_sub, test_sub):
+    """
+    Preparing machine learning model with appropriate data
+
+    Parameters
+    -------------
+    train_sub : str
+            Subject name for training
+    test_sub : str
+            Subject name for testing
+
+    Returns
+    -------------
+    total_score : float
+            Average accuracy of all folds
+
+    """
+    #train sub
+    memFC=reshape.matFiles(dataDir+'mem/'+train_sub+'_parcel_corrmat.mat')
+    memFC=memFC[:8,:]
+    semFC=reshape.matFiles(dataDir+'semantic/'+train_sub+'_parcel_corrmat.mat')
+    semFC=semFC[:8,:]
+    glassFC=reshape.matFiles(dataDir+'glass/'+train_sub+'_parcel_corrmat.mat')
+    glassFC=glassFC[:8,:]
+    motFC=reshape.matFiles(dataDir+'motor/'+train_sub+'_parcel_corrmat.mat')
+    motFC=motFC[:8,:]
+    restFC=reshape.matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+train_sub+'_parcel_corrmat.mat') #keep tasks seperated in order to collect the right amount of days
+    restFC=np.reshape(restFC,(10,4,55278)) #reshape to gather correct days
+    restFC=restFC[:8,:,:]
+    #test sub
+    test_memFC=reshape.matFiles(dataDir+'mem/'+test_sub+'_parcel_corrmat.mat')
+    test_semFC=reshape.matFiles(dataDir+'semantic/'+test_sub+'_parcel_corrmat.mat')
+    test_glassFC=reshape.matFiles(dataDir+'glass/'+test_sub+'_parcel_corrmat.mat')
+    test_motFC=reshape.matFiles(dataDir+'motor/'+test_sub+'_parcel_corrmat.mat')
+    test_restFC=reshape.matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub+'_parcel_corrmat.mat')
+    test_taskFC=np.concatenate((test_memFC,test_semFC,test_glassFC,test_motFC))
+
+    CV_score, DS_score=foldsBinary(train_sub, clf, memFC,semFC,glassFC,motFC, restFC, test_taskFC,test_restFC)
+    return CV_score, DS_score
+
+def foldsBinary(train_sub, clf, memFC,semFC,glassFC,motFC,restFC, test_taskFC, test_restFC):
+    """
+    Cross validation to train and test using nested loops
+
+    Parameters
+    -----------
+    clf : obj
+        Machine learning algorithm
+    taskFC, restFC, test_taskFC, test_restFC : array_like
+        Input arrays, training and testing set of task and rest FC
+    Returns
+    -----------
+    total_score : float
+        Average accuracy across folds
+    acc_score : list
+        List of accuracy for each outer fold
+    """
+    loo = LeaveOneOut()
+    test_taskSize=test_taskFC.shape[0]
+    test_restSize=test_restFC.shape[0]
+    testT= np.ones(test_taskSize, dtype = int)
+    testR= np.zeros(test_restSize, dtype = int)
+    ytest=np.concatenate((testT,testR))
+    Xtest=np.concatenate((test_taskFC,test_restFC))
+    CVacc=[]
+    DSacc=[]
+    #fold each training set
+    #session=splitDict[train_sub]
+    split=np.empty((8, 55278))
+    for train_index, test_index in loo.split(split):
+        memtrain, memval=memFC[train_index], memFC[test_index]
+        semtrain, semval=semFC[train_index], semFC[test_index]
+        mottrain, motval=motFC[train_index], motFC[test_index]
+        glatrain, glaval=glassFC[train_index], glassFC[test_index]
+        Xtrain_task=np.concatenate((memtrain,semtrain,mottrain,glatrain))
+        Xtrain_rest, Xval_rest=restFC[train_index,:,:], restFC[test_index,:,:]
+        Xval_task=np.concatenate((memval,semval,motval,glaval))
+        Xtrain_rest=np.reshape(Xtrain_rest,(-1,55278))
+        Xval_rest=np.reshape(Xval_rest,(-1,55278))
+        ytrain_task = np.ones(Xtrain_task.shape[0], dtype = int)
+        ytrain_rest=np.zeros(Xtrain_rest.shape[0], dtype=int)
+        yval_task = np.ones(Xval_task.shape[0], dtype = int)
+        yval_rest=np.zeros(Xval_rest.shape[0], dtype=int)
+        X_tr=np.concatenate((Xtrain_task, Xtrain_rest))
+        X_val=np.concatenate((Xval_task, Xval_rest))
+        y_tr = np.concatenate((ytrain_task,ytrain_rest))
+        y_val=np.concatenate((yval_task, yval_rest))
+        clf.fit(X_tr,y_tr)
+        CV_score=clf.score(X_val, y_val)
+        CVacc.append(CV_score)
+        ACCscores=clf.score(Xtest,ytest)
+        DSacc.append(ACCscores)
+    CV_score=mean(CVacc)
+    DS_score=mean(DSacc)
+    return  CV_score, DS_score
