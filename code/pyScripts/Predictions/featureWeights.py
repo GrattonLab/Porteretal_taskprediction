@@ -47,11 +47,30 @@ def classifyCV(sub, task):
     x_train, y_train=reshape.concateFC(taskFC, restFC)
     output = cross_validate(clf, x_train, y_train, cv=folds, return_estimator =True)
     session=0
-    i=len(output['estimator'])
-    arr=np.empty([i,55278])
+    j=len(output['estimator'])
+    arr=np.empty([j,55278])
     for model in output['estimator']:
         arr[session]=model.coef_
         session=session+1
+    fwSize=arr.shape[0]
+    for i in range(fwSize):
+        fold=arr[i]
+        indices=reshape.getIndices()
+        indices['fw']=fold
+        lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+        lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+        full_mat=pd.concat([indices,lower_triang])
+        features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+        features.sort_index(axis=0,level=1,inplace=True)
+        features.sort_index(axis=1,level=1,inplace=True)
+        absolute=features.abs()
+        dense_mat=absolute.sum(axis=1)
+        data={'acc':dense_mat,'roi':roi_sort}
+        df=pd.DataFrame(data)
+        df.sort_values(by='roi',inplace=True)
+        array=df['acc'].to_numpy()
+        array.tofile(outDir+'single_task/fw/subj_folds/'+str(i)+ sub+task+'.csv', sep = ',')
+    """
     fwAve=arr.mean(axis=0)
     indices=reshape.getIndices()
     indices['fw']=fwAve
@@ -68,7 +87,7 @@ def classifyCV(sub, task):
     df.sort_values(by='roi',inplace=True)
     array=df['acc'].to_numpy()
     array.tofile(outDir+'single_task/fw/'+sub+'_'+task+'.csv', sep = ',')
-
+    """
 
 
 def modelAll(train_sub):
@@ -118,6 +137,25 @@ def modelAll(train_sub):
         features = clf.coef_[0]
         fw[count]=features
         count=count+1
+    fwSize=fw.shape[0]
+    for i in range(fwSize):
+        fold=fw[i]
+        indices=reshape.getIndices()
+        indices['fw']=fold
+        lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+        lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+        full_mat=pd.concat([indices,lower_triang])
+        features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+        features.sort_index(axis=0,level=1,inplace=True)
+        features.sort_index(axis=1,level=1,inplace=True)
+        absolute=features.abs()
+        dense_mat=absolute.sum(axis=1)
+        data={'acc':dense_mat,'roi':roi_sort}
+        df=pd.DataFrame(data)
+        df.sort_values(by='roi',inplace=True)
+        array=df['acc'].to_numpy()
+        array.tofile(outDir+'ALL_Binary/fw/subj_folds/'+str(i)+ train_sub+'.csv', sep = ',')
+    """
     fwAve=fw.mean(axis=0)
     indices=reshape.getIndices()
     indices['fw']=fwAve
@@ -134,7 +172,7 @@ def modelAll(train_sub):
     df.sort_values(by='roi',inplace=True)
     array=df['acc'].to_numpy()
     array.tofile(outDir+'/ALL_Binary/fw/'+train_sub+'.csv', sep = ',')
-
+    """
 
 def allTasks():
     for train_sub in subList:
@@ -276,6 +314,25 @@ def FW_model(train_task):
             fw[count_folds]=features
             count_folds=count_folds+1
         fwAve = fw.mean(axis = 0) #average for all folds
+        fwSize=fw.shape[0]
+        for i in range(fwSize):
+            fold=fw[i]
+            indices=reshape.getIndices()
+            indices['fw']=fold
+            lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+            lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+            full_mat=pd.concat([indices,lower_triang])
+            features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+            features.sort_index(axis=0,level=1,inplace=True)
+            features.sort_index(axis=1,level=1,inplace=True)
+            absolute=features.abs()
+            dense_mat=absolute.sum(axis=1)
+            data={'acc':dense_mat,'roi':roi_sort}
+            df=pd.DataFrame(data)
+            df.sort_values(by='roi',inplace=True)
+            array=df['acc'].to_numpy()
+            array.tofile(outDir+'ALL_Binary/fw/groupwise_folds/'+str(i)+train_task+'_groupwise.csv', sep = ',')
+
         all_subs_features[all_count] = fwAve
         all_count = all_count +1
     all_feats = all_subs_features.mean(axis = 0)
@@ -322,15 +379,15 @@ def allTask_FW():
     #get all subs for a given task
     for sub in subList:
         #training task
-        tmp_memFC=reshape.matFiles(dataDir+'mem/'+sub+'_parcel_corrmat.mat')
+        tmp_memFC=reshape.permROI(dataDir+'mem/'+sub+'_parcel_corrmat.mat')
         tmp_memFC=tmp_memFC[:8,:]
-        tmp_semFC=reshape.matFiles(dataDir+'semantic/'+sub+'_parcel_corrmat.mat')
+        tmp_semFC=reshape.permROI(dataDir+'semantic/'+sub+'_parcel_corrmat.mat')
         tmp_semFC=tmp_semFC[:8,:]
-        tmp_glassFC=reshape.matFiles(dataDir+'glass/'+sub+'_parcel_corrmat.mat')
+        tmp_glassFC=reshape.permROI(dataDir+'glass/'+sub+'_parcel_corrmat.mat')
         tmp_glassFC=tmp_glassFC[:8,:]
-        tmp_motorFC=reshape.matFiles(dataDir+'motor/'+sub+'_parcel_corrmat.mat')
+        tmp_motorFC=reshape.permROI(dataDir+'motor/'+sub+'_parcel_corrmat.mat')
         tmp_motorFC=tmp_motorFC[:8,:]
-        tmp_restFC=reshape.matFiles(dataDir+'rest/'+sub+'_parcel_corrmat.mat')
+        tmp_restFC=reshape.permROI(dataDir+'rest/'+sub+'_parcel_corrmat.mat')
         #reshape 2d into 3d nsessxfcxnsubs
         tmp_restFC=tmp_restFC[:8,:]
         ds_mem[:,:,count]=tmp_memFC
@@ -390,7 +447,43 @@ def allTask_FW():
             features = clf.coef_[0]
             fw[count_folds]=features
             count_folds=count_folds+1
+
+        fwSize=fw.shape[0]
+        for i in range(fwSize):
+            fold=fw[i]
+            indices=reshape.getIndices()
+            indices['fw']=fold
+            lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+            lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+            full_mat=pd.concat([indices,lower_triang])
+            features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+            features.sort_index(axis=0,level=1,inplace=True)
+            features.sort_index(axis=1,level=1,inplace=True)
+            absolute=features.abs()
+            dense_mat=absolute.sum(axis=1)
+            data={'acc':dense_mat,'roi':roi_sort}
+            df=pd.DataFrame(data)
+            df.sort_values(by='roi',inplace=True)
+            array=df['acc'].to_numpy()
+            array.tofile(outDir+'ALL_Binary/fw/groupwise_folds/'+str(i)+'_groupwise.csv', sep = ',')
+
         fwAve = fw.mean(axis = 0) #average for all folds
+        indices=reshape.getIndices()
+        indices['fw']=fwAve
+        lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+        lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+        full_mat=pd.concat([indices,lower_triang])
+        features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+        features.sort_index(axis=0,level=1,inplace=True)
+        features.sort_index(axis=1,level=1,inplace=True)
+        absolute=features.abs()
+        dense_mat=absolute.sum(axis=1)
+        data={'acc':dense_mat,'roi':roi_sort}
+        df=pd.DataFrame(data)
+        df.sort_values(by='roi',inplace=True)
+        array=df['acc'].to_numpy()
+        array.tofile(outDir+'ALL_Binary/fw/oneSession_groupwise.csv', sep = ',')
+
         all_subs_features[all_count] = fwAve
         all_count = all_count +1
     all_feats = all_subs_features.mean(axis = 0)
@@ -409,3 +502,219 @@ def allTask_FW():
     df.sort_values(by='roi',inplace=True)
     array=df['acc'].to_numpy()
     array.tofile(outDir+'ALL_Binary/fw/groupwise_fw.csv', sep = ',')
+
+
+
+
+def max_groupwise_LOSO(train_task):
+    """
+    Train on all sessions, leave one subject out
+
+    Parameters
+    -------------
+    train_task : str
+            Task name for training
+    test_task : str
+            Task name for testing
+
+    Returns
+    -------------
+    within_score : float
+            Average accuracy of all folds leave one sub out of a given task
+    btn_score : float
+            Average accuracy of all folds leave one sub out of a given task
+
+    """
+    fw=np.empty([8,55278])
+    count_folds = 0
+    clf=RidgeClassifier()
+    loo = LeaveOneOut()
+    cv_scoreList =[]
+    data=np.array(['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'],dtype='<U61')
+    for  train, test in loo.split(data): #test on one sub train on all subs
+        train_subs = data[train]
+        test_sub = data[test]
+        test_task = reshape.permROI(dataDir+train_task+'/'+test_sub[0]+'_parcel_corrmat.mat')
+        test_rest = reshape.permROI(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat')
+        task, rest = incremental_AllSubFiles_groupavg(train_subs, train_task,8)
+        #training set
+        taskSize=task.shape[0]
+        restSize=rest.shape[0]
+        t = np.ones(taskSize, dtype = int)
+        r=np.zeros(restSize, dtype=int)
+        x_train=np.concatenate((task,rest))
+        y_train=np.concatenate((t,r))
+        #testing set (left out sub CV)
+        test_taskSize=test_task.shape[0]
+        test_restSize=test_rest.shape[0]
+        test_t = np.ones(test_taskSize, dtype = int)
+        test_r=np.zeros(test_restSize, dtype=int)
+        x_test=np.concatenate((test_task, test_rest))
+        y_test=np.concatenate((test_t,test_r))
+        #test left out sub 10 sessions
+        clf.fit(x_train,y_train)
+        features = clf.coef_[0]
+        fw[count_folds]=features
+        count_folds=count_folds+1
+    fwSize=fw.shape[0]
+    for i in range(fwSize):
+        fold=fw[i]
+        indices=reshape.getIndices()
+        indices['fw']=fold
+        lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+        lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+        full_mat=pd.concat([indices,lower_triang])
+        features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+        features.sort_index(axis=0,level=1,inplace=True)
+        features.sort_index(axis=1,level=1,inplace=True)
+        absolute=features.abs()
+        dense_mat=absolute.sum(axis=1)
+        data={'acc':dense_mat,'roi':roi_sort}
+        df=pd.DataFrame(data)
+        df.sort_values(by='roi',inplace=True)
+        array=df['acc'].to_numpy()
+        array.tofile(outDir+'single_task/fw/groupwise_folds/'+str(i)+train_task+'_groupwiseMax.csv', sep = ',')
+
+
+def groupAve_maxSession():
+    fw=np.empty([8,55278])
+    count_folds = 0
+    clf=RidgeClassifier()
+    #train sub
+    master_df=pd.DataFrame()
+    data=np.array(['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'],dtype='<U61')
+    loo = LeaveOneOut()
+
+    for  train,test in loo.split(data): #test on one sub train on the rest
+        CV_tmp=pd.DataFrame()
+        train_sub=data[train]
+        test_sub=data[test]
+    #test sub
+        memFC=reshape.permROI(dataDir+'mem/'+test_sub[0]+'_parcel_corrmat.mat')
+        semFC=reshape.permROI(dataDir+'semantic/'+test_sub[0]+'_parcel_corrmat.mat')
+        glassFC=reshape.permROI(dataDir+'glass/'+test_sub[0]+'_parcel_corrmat.mat')
+        motFC=reshape.permROI(dataDir+'motor/'+test_sub[0]+'_parcel_corrmat.mat')
+        restFC=reshape.permROI(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[0]+'_parcel_corrmat.mat') #keep tasks seperated in order to collect the right amount of days
+        yrest=np.zeros(restFC.shape[0])
+        ymem=np.ones(memFC.shape[0])
+        ysem=np.ones(semFC.shape[0])
+        yglass=np.ones(glassFC.shape[0])
+        ymot=np.ones(motFC.shape[0])
+        Xtest=np.concatenate((restFC,memFC,semFC,motFC,glassFC))
+        ytest=np.concatenate((yrest,ymem,ysem,ymot,yglass))
+        Xtrain,ytrain=reshape.AllSubFiles(train_sub)
+        clf.fit(Xtrain,ytrain)
+        features = clf.coef_[0]
+        fw[count_folds]=features
+        count_folds=count_folds+1
+    fwSize=fw.shape[0]
+    for i in range(fwSize):
+        fold=fw[i]
+        indices=reshape.getIndices()
+        indices['fw']=fold
+        lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+        lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+        full_mat=pd.concat([indices,lower_triang])
+        features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+        features.sort_index(axis=0,level=1,inplace=True)
+        features.sort_index(axis=1,level=1,inplace=True)
+        absolute=features.abs()
+        dense_mat=absolute.sum(axis=1)
+        data={'acc':dense_mat,'roi':roi_sort}
+        df=pd.DataFrame(data)
+        df.sort_values(by='roi',inplace=True)
+        array=df['acc'].to_numpy()
+        array.tofile(outDir+'ALL_Binary/fw/groupwise_folds/'+str(i)+ '_groupwiseMax.csv', sep = ',')
+
+
+
+def incremental_AllSubFiles_groupavg(test_sub, task,size):
+    """
+    Return task and rest FC all subs
+    Parameters
+    -----------
+    test_sub: Array of testing subs
+    Returns
+    ------------
+    taskFC, restFC : Array of task and rest FC of all testing subs
+    """
+    a_memFC=reshape.permROI(dataDir+task+'/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_restFC=reshape.permROI(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat')
+    number_of_rows = a_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    a_memFC = a_memFC[random_indices, :]
+
+    number_of_rows = a_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    a_restFC = a_restFC[random_indices, :]
+
+    b_memFC=reshape.permROI(dataDir+task+'/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_restFC=reshape.permROI(dataDir+'rest/'+test_sub[1]+'_parcel_corrmat.mat')
+
+    number_of_rows = b_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    b_memFC = b_memFC[random_indices, :]
+
+    number_of_rows = b_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    b_restFC = b_restFC[random_indices, :]
+
+    c_memFC=reshape.permROI(dataDir+task+'/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_restFC=reshape.permROI(dataDir+'rest/'+test_sub[2]+'_parcel_corrmat.mat')
+
+    number_of_rows = c_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    c_memFC = c_memFC[random_indices, :]
+
+    number_of_rows = c_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    c_restFC = c_restFC[random_indices, :]
+
+    d_memFC=reshape.permROI(dataDir+task+'/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_restFC=reshape.permROI(dataDir+'rest/'+test_sub[3]+'_parcel_corrmat.mat')
+
+    number_of_rows = d_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    d_memFC = d_memFC[random_indices, :]
+
+    number_of_rows = d_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    d_restFC = d_restFC[random_indices, :]
+
+    e_memFC=reshape.permROI(dataDir+task+'/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_restFC=reshape.permROI(dataDir+'rest/'+test_sub[4]+'_parcel_corrmat.mat')
+
+    number_of_rows = e_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    e_memFC = e_memFC[random_indices, :]
+
+    number_of_rows = e_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    e_restFC = e_restFC[random_indices, :]
+
+    f_memFC=reshape.permROI(dataDir+task+'/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_restFC=reshape.permROI(dataDir+'rest/'+test_sub[5]+'_parcel_corrmat.mat')
+
+    number_of_rows = f_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    f_memFC = f_memFC[random_indices, :]
+
+    number_of_rows = f_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    f_restFC = f_restFC[random_indices, :]
+
+    g_memFC=reshape.permROI(dataDir+task+'/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_restFC=reshape.permROI(dataDir+'rest/'+test_sub[6]+'_parcel_corrmat.mat')
+
+    number_of_rows = g_memFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    g_memFC = g_memFC[random_indices, :]
+
+    number_of_rows = g_restFC.shape[0]
+    random_indices = np.random.choice(number_of_rows, size=size, replace=False)
+    g_restFC = g_restFC[random_indices, :]
+
+    taskFC=np.concatenate((a_memFC,b_memFC,c_memFC,d_memFC,e_memFC,f_memFC,g_memFC))
+    restFC=np.concatenate((a_restFC,b_restFC,c_restFC,d_restFC,e_restFC,f_restFC,g_restFC))
+
+    return taskFC, restFC

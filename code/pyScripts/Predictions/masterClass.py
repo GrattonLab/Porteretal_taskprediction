@@ -877,3 +877,154 @@ def classifyIndNet(classifier='Ridge'):
     df['ds_tpv']=tpv_ds
     df['ds_rpv']=rpv_ds
     df.to_csv(outDir+classifier+'/ALL_IndNet/acc.csv',index=False)
+
+
+def AllSubFiles_matched(test_sub,i):
+    """
+    Return task and rest FC all subs
+    Parameters
+    -----------
+    test_sub: Array of testing subs
+    Returns
+    ------------
+    taskFC, restFC : Array of task and rest FC of all testing subs
+    """
+    a_memFC=reshape.matFiles(dataDir+'mem/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_motFC=reshape.matFiles(dataDir+'motor/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_restFC=reshape.matFiles(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_memFC=a_memFC[i]
+    a_semFC=a_semFC[i]
+    a_glassFC=a_glassFC[i]
+    a_motFC=a_motFC[i]
+    a_restFC=a_restFC[i]
+
+    a_memFC=np.reshape(a_memFC,(-1,55278))
+    a_semFC=np.reshape(a_semFC,(-1,55278))
+    a_glassFC=np.reshape(a_glassFC,(-1,55278))
+    a_motFC=np.reshape(a_motFC,(-1,55278))
+    a_restFC=np.reshape(a_restFC,(-1,55278))
+
+    b_memFC=reshape.matFiles(dataDir+'mem/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_motFC=reshape.matFiles(dataDir+'motor/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_restFC=reshape.matFiles(dataDir+'rest/'+test_sub[1]+'_parcel_corrmat.mat')
+
+    b_memFC=b_memFC[i]
+    b_semFC=b_semFC[i]
+    b_glassFC=b_glassFC[i]
+    b_motFC=b_motFC[i]
+    b_restFC=b_restFC[i]
+
+    b_memFC=np.reshape(b_memFC,(-1,55278))
+    b_semFC=np.reshape(b_semFC,(-1,55278))
+    b_glassFC=np.reshape(b_glassFC,(-1,55278))
+    b_motFC=np.reshape(b_motFC,(-1,55278))
+    b_restFC=np.reshape(b_restFC,(-1,55278))
+
+    c_memFC=reshape.matFiles(dataDir+'mem/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_motFC=reshape.matFiles(dataDir+'motor/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_restFC=reshape.matFiles(dataDir+'rest/'+test_sub[2]+'_parcel_corrmat.mat')
+
+    c_memFC=c_memFC[i]
+    c_semFC=c_semFC[i]
+    c_glassFC=c_glassFC[i]
+    c_motFC=c_motFC[i]
+    c_restFC=c_restFC[i]
+
+    c_memFC=np.reshape(c_memFC,(-1,55278))
+    c_semFC=np.reshape(c_semFC,(-1,55278))
+    c_glassFC=np.reshape(c_glassFC,(-1,55278))
+    c_motFC=np.reshape(c_motFC,(-1,55278))
+    c_restFC=np.reshape(c_restFC,(-1,55278))
+
+    d_memFC=reshape.matFiles(dataDir+'mem/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_motFC=reshape.matFiles(dataDir+'motor/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_restFC=reshape.matFiles(dataDir+'rest/'+test_sub[3]+'_parcel_corrmat.mat')
+
+    d_memFC=d_memFC[i]
+    d_semFC=d_semFC[i]
+    d_glassFC=d_glassFC[i]
+    d_motFC=d_motFC[i]
+    d_restFC=d_restFC[i]
+
+    d_memFC=np.reshape(d_memFC,(-1,55278))
+    d_semFC=np.reshape(d_semFC,(-1,55278))
+    d_glassFC=np.reshape(d_glassFC,(-1,55278))
+    d_motFC=np.reshape(d_motFC,(-1,55278))
+    d_restFC=np.reshape(d_restFC,(-1,55278))
+
+    e_memFC=reshape.matFiles(dataDir+'mem/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_motFC=reshape.matFiles(dataDir+'motor/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_restFC=reshape.matFiles(dataDir+'rest/'+test_sub[4]+'_parcel_corrmat.mat')
+
+    e_memFC=e_memFC[i]
+    e_semFC=e_semFC[i]
+    e_glassFC=e_glassFC[i]
+    e_motFC=e_motFC[i]
+    e_restFC=e_restFC[i]
+    e_memFC=np.reshape(e_memFC,(-1,55278))
+    e_semFC=np.reshape(e_semFC,(-1,55278))
+    e_glassFC=np.reshape(e_glassFC,(-1,55278))
+    e_motFC=np.reshape(e_motFC,(-1,55278))
+    e_restFC=np.reshape(e_restFC,(-1,55278))
+
+    f_memFC=reshape.matFiles(dataDir+'mem/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_motFC=reshape.matFiles(dataDir+'motor/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_restFC=reshape.matFiles(dataDir+'rest/'+test_sub[5]+'_parcel_corrmat.mat')
+
+    f_memFC=f_memFC[i]
+    f_semFC=f_semFC[i]
+    f_glassFC=f_glassFC[i]
+    f_motFC=f_motFC[i]
+    f_restFC=f_restFC[i]
+    f_memFC=np.reshape(f_memFC,(-1,55278))
+    f_semFC=np.reshape(f_semFC,(-1,55278))
+    f_glassFC=np.reshape(f_glassFC,(-1,55278))
+    f_motFC=np.reshape(f_motFC,(-1,55278))
+    f_restFC=np.reshape(f_restFC,(-1,55278))
+    g_memFC=reshape.matFiles(dataDir+'mem/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_motFC=reshape.matFiles(dataDir+'motor/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_restFC=reshape.matFiles(dataDir+'rest/'+test_sub[6]+'_parcel_corrmat.mat')
+
+    g_memFC=g_memFC[i]
+    g_semFC=g_semFC[i]
+    g_glassFC=g_glassFC[i]
+    g_motFC=g_motFC[i]
+    g_restFC=g_restFC[i]
+    g_memFC=np.reshape(g_memFC,(-1,55278))
+    g_semFC=np.reshape(g_semFC,(-1,55278))
+    g_glassFC=np.reshape(g_glassFC,(-1,55278))
+    g_motFC=np.reshape(g_motFC,(-1,55278))
+    g_restFC=np.reshape(g_restFC,(-1,55278))
+    restFC=np.concatenate((a_restFC,b_restFC,c_restFC,d_restFC,e_restFC,f_restFC,g_restFC))
+    test_restSize=restFC.shape[0]
+    testR= np.zeros(test_restSize, dtype = int)
+    memFC=np.concatenate((a_memFC,b_memFC,c_memFC,d_memFC,e_memFC,f_memFC,g_memFC))
+    ymem=np.ones(memFC.shape[0])
+
+    semFC=np.concatenate((a_semFC,b_semFC,c_semFC,d_semFC,e_semFC,f_semFC,g_semFC))
+    ysem=np.full(semFC.shape[0],2)
+
+    glassFC=np.concatenate((a_glassFC,b_glassFC,c_glassFC,d_glassFC,e_glassFC,f_glassFC,g_glassFC))
+    yglass=np.full(glassFC.shape[0],3)
+
+    motFC=np.concatenate((a_motFC,b_motFC,c_motFC,d_motFC,e_motFC,f_motFC,g_motFC))
+    ymot=np.full(motFC.shape[0],4)
+
+    testFC=np.concatenate((restFC,memFC,semFC,motFC, glassFC))
+    ytest=np.concatenate((testR,ymem,ysem,ymot,yglass))
+
+    return testFC,ytest

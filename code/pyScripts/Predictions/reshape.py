@@ -736,53 +736,57 @@ def AllSubFiles(test_sub):
     ------------
     taskFC, restFC : Array of task and rest FC of all testing subs
     """
-    a_memFC=matFiles(dataDir+'mem/'+test_sub[0]+'_parcel_corrmat.mat')
-    a_semFC=matFiles(dataDir+'semantic/'+test_sub[0]+'_parcel_corrmat.mat')
-    a_glassFC=matFiles(dataDir+'glass/'+test_sub[0]+'_parcel_corrmat.mat')
-    a_motFC=matFiles(dataDir+'motor/'+test_sub[0]+'_parcel_corrmat.mat')
-    a_restFC=matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_memFC=permROI(dataDir+'mem/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_semFC=permROI(dataDir+'semantic/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_glassFC=permROI(dataDir+'glass/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_motFC=permROI(dataDir+'motor/'+test_sub[0]+'_parcel_corrmat.mat')
+    a_restFC=permROI(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[0]+'_parcel_corrmat.mat')
 
-    b_memFC=matFiles(dataDir+'mem/'+test_sub[1]+'_parcel_corrmat.mat')
-    b_semFC=matFiles(dataDir+'semantic/'+test_sub[1]+'_parcel_corrmat.mat')
-    b_glassFC=matFiles(dataDir+'glass/'+test_sub[1]+'_parcel_corrmat.mat')
-    b_motFC=matFiles(dataDir+'motor/'+test_sub[1]+'_parcel_corrmat.mat')
-    b_restFC=matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_memFC=permROI(dataDir+'mem/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_semFC=permROI(dataDir+'semantic/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_glassFC=permROI(dataDir+'glass/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_motFC=permROI(dataDir+'motor/'+test_sub[1]+'_parcel_corrmat.mat')
+    b_restFC=permROI(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[1]+'_parcel_corrmat.mat')
 
-    c_memFC=matFiles(dataDir+'mem/'+test_sub[2]+'_parcel_corrmat.mat')
-    c_semFC=matFiles(dataDir+'semantic/'+test_sub[2]+'_parcel_corrmat.mat')
-    c_glassFC=matFiles(dataDir+'glass/'+test_sub[2]+'_parcel_corrmat.mat')
-    c_motFC=matFiles(dataDir+'motor/'+test_sub[2]+'_parcel_corrmat.mat')
-    c_restFC=matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_memFC=permROI(dataDir+'mem/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_semFC=permROI(dataDir+'semantic/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_glassFC=permROI(dataDir+'glass/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_motFC=permROI(dataDir+'motor/'+test_sub[2]+'_parcel_corrmat.mat')
+    c_restFC=permROI(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[2]+'_parcel_corrmat.mat')
 
-    d_memFC=matFiles(dataDir+'mem/'+test_sub[3]+'_parcel_corrmat.mat')
-    d_semFC=matFiles(dataDir+'semantic/'+test_sub[3]+'_parcel_corrmat.mat')
-    d_glassFC=matFiles(dataDir+'glass/'+test_sub[3]+'_parcel_corrmat.mat')
-    d_motFC=matFiles(dataDir+'motor/'+test_sub[3]+'_parcel_corrmat.mat')
-    d_restFC=matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_memFC=permROI(dataDir+'mem/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_semFC=permROI(dataDir+'semantic/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_glassFC=permROI(dataDir+'glass/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_motFC=permROI(dataDir+'motor/'+test_sub[3]+'_parcel_corrmat.mat')
+    d_restFC=permROI(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[3]+'_parcel_corrmat.mat')
 
-    e_memFC=matFiles(dataDir+'mem/'+test_sub[4]+'_parcel_corrmat.mat')
-    e_semFC=matFiles(dataDir+'semantic/'+test_sub[4]+'_parcel_corrmat.mat')
-    e_glassFC=matFiles(dataDir+'glass/'+test_sub[4]+'_parcel_corrmat.mat')
-    e_motFC=matFiles(dataDir+'motor/'+test_sub[4]+'_parcel_corrmat.mat')
-    e_restFC=matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_memFC=permROI(dataDir+'mem/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_semFC=permROI(dataDir+'semantic/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_glassFC=permROI(dataDir+'glass/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_motFC=permROI(dataDir+'motor/'+test_sub[4]+'_parcel_corrmat.mat')
+    e_restFC=permROI(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[4]+'_parcel_corrmat.mat')
 
-    f_memFC=matFiles(dataDir+'mem/'+test_sub[5]+'_parcel_corrmat.mat')
-    f_semFC=matFiles(dataDir+'semantic/'+test_sub[5]+'_parcel_corrmat.mat')
-    f_glassFC=matFiles(dataDir+'glass/'+test_sub[5]+'_parcel_corrmat.mat')
-    f_motFC=matFiles(dataDir+'motor/'+test_sub[5]+'_parcel_corrmat.mat')
-    f_restFC=matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_memFC=permROI(dataDir+'mem/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_semFC=permROI(dataDir+'semantic/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_glassFC=permROI(dataDir+'glass/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_motFC=permROI(dataDir+'motor/'+test_sub[5]+'_parcel_corrmat.mat')
+    f_restFC=permROI(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[5]+'_parcel_corrmat.mat')
 
-    g_memFC=matFiles(dataDir+'mem/'+test_sub[6]+'_parcel_corrmat.mat')
-    g_semFC=matFiles(dataDir+'semantic/'+test_sub[6]+'_parcel_corrmat.mat')
-    g_glassFC=matFiles(dataDir+'glass/'+test_sub[6]+'_parcel_corrmat.mat')
-    g_motFC=matFiles(dataDir+'motor/'+test_sub[6]+'_parcel_corrmat.mat')
-    g_restFC=matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_memFC=permROI(dataDir+'mem/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_semFC=permROI(dataDir+'semantic/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_glassFC=permROI(dataDir+'glass/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_motFC=permROI(dataDir+'motor/'+test_sub[6]+'_parcel_corrmat.mat')
+    g_restFC=permROI(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[6]+'_parcel_corrmat.mat')
 
 
     taskFC=np.concatenate((a_memFC,a_semFC,a_glassFC,a_motFC,b_memFC,b_semFC,b_glassFC,b_motFC,c_memFC,c_semFC,c_glassFC,c_motFC,d_memFC,d_semFC,d_glassFC,d_motFC,e_memFC,e_semFC,e_glassFC,e_motFC,f_memFC,f_semFC,f_glassFC,f_motFC,g_memFC,g_semFC,g_glassFC,g_motFC))
     restFC=np.concatenate((a_restFC,b_restFC,c_restFC,d_restFC,e_restFC,f_restFC,g_restFC))
-
-    return taskFC, restFC
+    xtrain = np.concatenate((taskFC, restFC))
+    rest_y = np.zeros(restFC.shape[0])
+    task_y = np.ones(taskFC.shape[0])
+    ytrain=np.concatenate((task_y, rest_y))
+    return xtrain, ytrain
+    #return taskFC, restFC
 
 def AllSubFiles_groupavg(test_sub, task):
     """

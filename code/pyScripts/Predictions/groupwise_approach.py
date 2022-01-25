@@ -30,6 +30,7 @@ subList=['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10']
 subsComb=(list(itertools.permutations(subList, 2)))
 tasksComb=(list(itertools.permutations(taskList, 2)))
 DSvars=list(itertools.product(list(subsComb),list(taskList)))
+
 def groupApp():
     """
     Classifying using all subs testing unseen sub on same task
@@ -684,3 +685,186 @@ def foldsBinary(train_sub, clf, memFC,semFC,glassFC,motFC,restFC, test_taskFC, t
     CV_score=mean(CVacc)
     DS_score=mean(DSacc)
     return  CV_score, DS_score
+
+
+
+
+
+
+def multiclassAll_matched():
+    """
+    Multiclassifier using groupwise approach but keeping the same amount of data as the single sub multiclassifier
+
+    Parameters
+    -------------
+    train_sub : str
+            Subject name for training
+    test_sub : str
+            Subject name for testing
+
+    Returns
+    -------------
+    total_score : float
+            Average accuracy of all folds
+
+    """
+    clf=RidgeClassifier()
+    #train sub
+    master_df=pd.DataFrame()
+    data=np.array(['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'],dtype='<U61')
+    loo = LeaveOneOut()
+    acc=[]
+    test_sub_acc=[]
+    for  train,test in loo.split(data): #test on one sub train on the rest
+        CV_tmp=pd.DataFrame()
+        train_sub=data[train]
+        test_sub=data[test]
+    #test sub
+        memFC=reshape.matFiles(dataDir+'mem/'+test_sub[0]+'_parcel_corrmat.mat')
+        semFC=reshape.matFiles(dataDir+'semantic/'+test_sub[0]+'_parcel_corrmat.mat')
+        glassFC=reshape.matFiles(dataDir+'glass/'+test_sub[0]+'_parcel_corrmat.mat')
+        motFC=reshape.matFiles(dataDir+'motor/'+test_sub[0]+'_parcel_corrmat.mat')
+        restFC=reshape.matFiles(dataDir+'rest/'+test_sub[0]+'_parcel_corrmat.mat') #keep tasks seperated in order to collect the right amount of days
+        yrest=np.zeros(restFC.shape[0])
+        ymem=np.ones(memFC.shape[0])
+        ysem=np.full(semFC.shape[0],2)
+        yglass=np.full(glassFC.shape[0],3)
+        ymot=np.full(motFC.shape[0],4)
+        Xtest=np.concatenate((restFC,memFC,semFC,motFC,glassFC))
+        ytest=np.concatenate((yrest,ymem,ysem,ymot,yglass))
+        all_acc=[]
+        for i in range(8): #select each session to train on per sub going with 8 because not every sub has all 10 sessions
+            Xtrain,ytrain=masterClass.AllSubFiles_matched(train_sub,i)
+            clf.fit(Xtrain,ytrain) #train on 7 subjects * 5 tasks = 35 samples
+            score=clf.score(Xtest, ytest)
+            all_acc.append(score)
+        acc.append(mean(all_acc))
+        test_sub_acc.append(test_sub[0])
+    master_df['acc']=acc
+    master_df['test_sub']=test_sub_acc
+    master_df.to_csv(outDir+'ALL_MC/groupwise_matched_acc.csv',index=False)
+
+
+
+def multiclassAll_singleSub():
+    """
+    Preparing machine learning model with appropriate data
+
+    Parameters
+    -------------
+    train_sub : str
+            Subject name for training
+    test_sub : str
+            Subject name for testing
+
+    Returns
+    -------------
+    total_score : float
+            Average accuracy of all folds
+
+    """
+    clf=RidgeClassifier()
+    #train sub
+    train_sub_list=[]
+    CV_acc_list = []
+    DS_acc_list =[]
+    master_df=pd.DataFrame()
+    data=np.array(['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'],dtype='<U61')
+    loo = LeaveOneOut()
+    for  test, train in loo.split(data): #train on one sub test on the rest
+        CV_tmp=pd.DataFrame()
+        DS_tmp=pd.DataFrame()
+        train_sub=data[train]
+        test_sub=data[test]
+    #train sub
+        memFC=reshape.matFiles(dataDir+'mem/'+train_sub[0]+'_parcel_corrmat.mat')
+        semFC=reshape.matFiles(dataDir+'semantic/'+train_sub[0]+'_parcel_corrmat.mat')
+        glassFC=reshape.matFiles(dataDir+'glass/'+train_sub[0]+'_parcel_corrmat.mat')
+        motFC=reshape.matFiles(dataDir+'motor/'+train_sub[0]+'_parcel_corrmat.mat')
+        restFC=reshape.matFiles(dataDir+'rest/'+train_sub[0]+'_parcel_corrmat.mat') #keep tasks seperated in order to collect the right amount of days
+
+        memFC=memFC[:8,:]
+        semFC=semFC[:8,:]
+        glassFC=glassFC[:8,:]
+        motFC=motFC[:8,:]
+        restFC=restFC[:8,:]
+        #test sub
+        testFC,ytest=masterClass.AllSubFiles(test_sub)
+        same_Tsub, diff_Tsub=folds_MC(train_sub, clf, memFC,semFC,glassFC,motFC, restFC, testFC, ytest)
+        CV_acc_list.append(same_Tsub)
+        DS_acc_list.append(diff_Tsub)
+    master_df['same_sub'] = CV_acc_list
+    master_df['diff_sub'] = DS_acc_list
+    master_df['train_sub'] = data
+    master_df.to_csv(outDir+'ALL_MC/acc_matched.csv',index=False)
+
+def folds_MC(train_sub, clf, memFC,semFC,glassFC,motFC, restFC, testFC,ytest):
+    """
+    Cross validation to train and test using nested loops
+
+    Parameters
+    -----------
+    clf : obj
+        Machine learning algorithm
+    taskFC, restFC, test_taskFC, test_restFC : array_like
+        Input arrays, training and testing set of task and rest FC
+    Returns
+    -----------
+    total_score : float
+        Average accuracy across folds
+    acc_score : list
+        List of accuracy for each outer fold
+    """
+
+    loo = LeaveOneOut()
+    yrest=np.zeros(restFC.shape[0])
+    ymem=np.ones(memFC.shape[0])
+    ysem=np.full(semFC.shape[0],2)
+    yglass=np.full(glassFC.shape[0],3)
+    ymot=np.full(motFC.shape[0],4)
+    CVTacc=[]
+    DSTacc=[]
+    count=0
+    #fold each training set
+    #session=splitDict[train_sub[0]]
+    split=np.empty((8, 55278))
+    for train_index, test_index in loo.split(split):
+        memtrain, memval=memFC[train_index], memFC[test_index]
+        ymemtrain, ymemval=ymem[train_index], ymem[test_index]
+        semtrain, semval=semFC[train_index], semFC[test_index]
+        ysemtrain, ysemval=ysem[train_index],ysem[test_index]
+        mottrain, motval=motFC[train_index], motFC[test_index]
+        ymottrain, ymotval=ymot[train_index],ymot[test_index]
+        glatrain, glaval=glassFC[train_index], glassFC[test_index]
+        yglatrain,yglaval=yglass[train_index],yglass[test_index]
+        resttrain, restval=restFC[train_index], restFC[test_index]
+        yresttrain, yrestval=yrest[train_index],yrest[test_index]
+
+        resttrain=np.reshape(resttrain,(-1,55278))
+        restval=np.reshape(restval,(-1,55278))
+
+        glatrain=np.reshape(glatrain,(-1,55278))
+        glaval=np.reshape(glaval,(-1,55278))
+
+        mottrain=np.reshape(mottrain,(-1,55278))
+        motval=np.reshape(motval,(-1,55278))
+
+        memtrain=np.reshape(memtrain,(-1,55278))
+        memval=np.reshape(memval,(-1,55278))
+
+        semtrain=np.reshape(semtrain,(-1,55278))
+        semval=np.reshape(semval,(-1,55278))
+
+
+        Xtrain=np.concatenate((resttrain,memtrain,semtrain,mottrain,glatrain))
+        ytrain=np.concatenate((yresttrain,ymemtrain,ysemtrain,ymottrain,yglatrain))
+        yval=np.concatenate((yrestval,ymemval,ysemval,ymotval,yglaval))
+        Xval=np.concatenate((restval,memval,semval,motval,glaval))
+        clf.fit(Xtrain,ytrain)
+        score=clf.score(Xval, yval)
+        CVTacc.append(score)
+        scoreT=clf.score(testFC,ytest)
+        DSTacc.append(scoreT)
+    same_Tsub=mean(CVTacc)
+    diff_Tsub=mean(DSTacc)
+    return same_Tsub,diff_Tsub
