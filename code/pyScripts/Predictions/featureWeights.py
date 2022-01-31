@@ -331,8 +331,7 @@ def FW_model(train_task):
             df=pd.DataFrame(data)
             df.sort_values(by='roi',inplace=True)
             array=df['acc'].to_numpy()
-            array.tofile(outDir+'ALL_Binary/fw/groupwise_folds/'+str(i)+train_task+'_groupwise.csv', sep = ',')
-
+            array.tofile(outDir+'single_task/fw/subj_folds/'+str(i)+'groupwise'+train_task+'.csv', sep = ',')
         all_subs_features[all_count] = fwAve
         all_count = all_count +1
     all_feats = all_subs_features.mean(axis = 0)
