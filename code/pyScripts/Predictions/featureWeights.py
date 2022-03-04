@@ -3,6 +3,7 @@ import numpy as np
 import os
 import sys
 import pandas as pd
+import itertools
 #import other python scripts for further anlaysis
 import reshape
 from sklearn.linear_model import RidgeClassifier
@@ -14,13 +15,13 @@ warnings.filterwarnings("ignore")
 thisDir = os.path.expanduser('~/Desktop/Porteretal_taskprediction/')
 dataDir = thisDir + 'data/corrmats/'
 splitDict=dict([('MSC01',10),('MSC02',10),('MSC03',8),('MSC04',10),('MSC05',10),('MSC06',9),('MSC07',9),('MSC10',10)])
-
+memList=['pres1','pres2','pres3']
 subList=['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10']
 taskList=['semantic','motor','mem','glass']
 Parcel_params = reshape.loadParcelParams('Gordon333')
 roi_sort = np.squeeze(Parcel_params['roi_sort'])
 outDir = thisDir + 'output/results/Ridge/'
-
+tasksPerm=(list(itertools.combinations(memList, 2)))
 def allSubs():
     for task in taskList:
         for train_sub in subList:
@@ -717,3 +718,154 @@ def incremental_AllSubFiles_groupavg(test_sub, task,size):
     restFC=np.concatenate((a_restFC,b_restFC,c_restFC,d_restFC,e_restFC,f_restFC,g_restFC))
 
     return taskFC, restFC
+
+
+
+def classifydiffMem():
+    """
+    Classifying different subjects (DS) along the same task
+
+    Parameters
+    -------------
+    classifier : string
+        Provide classifier type for analysis, options SVM=LinearSVC(), Log=LogisticRegression(solver='lbfgs'), Ridge=RidgeClassifier()
+
+    Returns
+    -------------
+    dfDS : DataFrame
+        Dataframe consisting of average accuracy across all subjects
+
+    """
+    clf=RidgeClassifier()
+    dfGroup=pd.DataFrame(tasksPerm, columns=['train_task','test_task'])
+    for sub in subList:
+        for index, row in dfGroup.iterrows():
+            taskFC=reshape.permROI(dataDir+'mem/'+row['train_task']+'/'+sub+'_parcel_corrmat.mat')
+            restFC=reshape.permROI(dataDir+'mem/'+row['test_task']+'/'+sub+'_parcel_corrmat.mat')
+            folds=taskFC.shape[0]
+            x_train, y_train=reshape.concateFC(taskFC, restFC)
+            output = cross_validate(clf, x_train, y_train, cv=folds, return_estimator =True)
+            session=0
+            i=len(output['estimator'])
+            arr=np.empty([i,55278])
+            for model in output['estimator']:
+                arr[session]=model.coef_
+                session=session+1
+            fwAve=arr.mean(axis=0)
+            indices=reshape.getIndices()
+            indices['fw']=fwAve
+            lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+            lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+            full_mat=pd.concat([indices,lower_triang])
+            features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+            features.sort_index(axis=0,level=1,inplace=True)
+            features.sort_index(axis=1,level=1,inplace=True)
+            absolute=features.abs()
+            dense_mat=absolute.sum(axis=1)
+            data={'acc':dense_mat,'roi':roi_sort}
+            df=pd.DataFrame(data)
+            df.sort_values(by='roi',inplace=True)
+            array=df['acc'].to_numpy()
+            array.tofile(outDir+'single_task/fw/'+sub+'_'+row['train_task']+'_'+row['test_task']+'.csv', sep = ',')
+
+
+
+
+def groupApp_mem():
+    """
+    Feature weights for groupwise approach single task
+    Parameters
+    -------------
+
+
+    Returns
+    -------------
+    dfGroup : DataFrame
+        Dataframe consisting of group average accuracy training with subs instead of session
+
+    """
+    dfGroup=pd.DataFrame(tasksPerm, columns=['train_task','test_task'])
+    for index, row in dfGroup.iterrows():
+        FW_model_mem(row['train_task'], row['test_task'])
+
+
+def FW_model_mem(train_task, test_task):
+    """
+    Preparing machine learning model with appropriate data
+
+    Parameters
+    -------------
+    train_task : str
+            Task name for training
+    test_task : str
+            Task name for testing
+
+    Returns
+    -------------
+    within_score : float
+            Feature weights averaged across all folds
+
+    """
+
+    #nsess x fc x nsub
+    ds_T=np.empty((8,55278,8))
+    ds_R=np.empty((8,55278,8))
+    count=0
+    #get all subs for a given task
+    for sub in subList:
+        #training task
+        tmp_taskFC=reshape.permROI(dataDir+'mem/'+train_task+'/'+sub+'_parcel_corrmat.mat')
+        tmp_taskFC=tmp_taskFC[:8,:]
+        tmp_restFC=reshape.permROI(dataDir+'mem/'+test_task+'/'+sub+'_parcel_corrmat.mat')
+        tmp_restFC=tmp_restFC[:8,:]
+        #reshape 2d into 3d nsessxfcxnsubs
+        ds_T[:,:,count]=tmp_taskFC
+        ds_R[:,:,count]=tmp_restFC
+        count=count+1
+    clf=RidgeClassifier()
+    loo = LeaveOneOut()
+    wtn_scoreList=[]
+    all_subs_features=np.empty([8,55278]) # 8 subs
+    all_count = 0
+    for i in range(8):
+    #takes one session of data (7 subs)
+        taskFC=ds_T[i,:,:]
+        taskFC=taskFC.T
+        restFC=ds_R[i,:,:]
+        restFC=restFC.T
+        taskSize=taskFC.shape[0]
+        restSize=restFC.shape[0]
+        t = np.ones(taskSize, dtype = int)
+        r=np.zeros(restSize, dtype=int)
+        fw=np.empty([taskFC.shape[0],55278])
+        count_folds = 0
+        for train_index, test_index in loo.split(taskFC):
+            Xtrain_rest, Xtest_rest=restFC[train_index], restFC[test_index]
+            Xtrain_task, Xtest_task=taskFC[train_index], taskFC[test_index]
+            ytrain_rest,ytest_rest=r[train_index], r[test_index]
+            ytrain_task,ytest_task=t[train_index], t[test_index]
+            X_tr=np.concatenate((Xtrain_task, Xtrain_rest))
+            y_tr = np.concatenate((ytrain_task,ytrain_rest))
+            clf.fit(X_tr,y_tr)
+            features = clf.coef_[0]
+            fw[count_folds]=features
+            count_folds=count_folds+1
+        fwAve = fw.mean(axis = 0) #average for all folds
+        all_subs_features[all_count] = fwAve
+        all_count = all_count +1
+    all_feats = all_subs_features.mean(axis = 0)
+    indices=reshape.getIndices()
+    indices['fw']=all_feats
+    lower_triang=indices[['level_0','level_1','variable_0','variable_1','fw']]
+    lower_triang.rename(columns={'level_0':'variable_0','level_1':'variable_1','variable_0':'level_0','variable_1':'level_1'},inplace=True)
+    full_mat=pd.concat([indices,lower_triang])
+    features=full_mat.pivot(index=['level_0','level_1'],columns=['variable_0','variable_1'],values='fw')
+    features.sort_index(axis=0,level=1,inplace=True)
+    features.sort_index(axis=1,level=1,inplace=True)
+    absolute=features.abs()
+    dense_mat=absolute.sum(axis=1)
+    data={'acc':dense_mat,'roi':roi_sort}
+    df=pd.DataFrame(data)
+    df.sort_values(by='roi',inplace=True)
+    array=df['acc'].to_numpy()
+    array.tofile(outDir+'single_task/fw/'+train_task+'_'+test_task+'groupwise_fw.csv', sep = ',')
