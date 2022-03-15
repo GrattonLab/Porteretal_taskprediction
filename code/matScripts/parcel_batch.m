@@ -22,16 +22,21 @@ parcel='/Users/Alexis/Desktop/Porteretal_taskprediction/code/matScripts/Parcels_
 %assign_data_to_parcel_cifti_V2(data,parcel,dir, 'groupwise_onesession')
 %subs={'MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'};
 task={'mem','semantic','motor','glass'};
-folds={'0','1','2','3','4','5','6','7'};
-for i=1:length(task);
-    %for j=1:length(folds);
-        dataF=['/Users/Alexis/Desktop/Porteretal_taskprediction/output/results/Ridge/single_task/fw/' task{i} 'groupwise_fw.csv']; %'/' subs{j} '.csv'];
+folds={'0','1','2','3','4','5','6','7','8','9'};
+%for i=1:length(task);
+    for j=1:length(folds);
+        dataF=['/Users/Alexis/Desktop/Porteretal_taskprediction/output/results/Ridge/ALL_Binary/fw/subj_folds/' folds{j} 'MSC05.csv'];
         data=load(dataF);
-        dir=['/Users/Alexis/Desktop/Porteretal_taskprediction/output/results/Ridge/single_task/fw/groupwise_'];
-        assign_data_to_parcel_cifti_V2(data,parcel,dir, task{i})
+        dir=['/Users/Alexis/Desktop/Porteretal_taskprediction/output/results/Ridge/ALL_Binary/fw/subj_folds/MSC05_'];
+        assign_data_to_parcel_cifti_V2(data,parcel,dir, folds{j})
         clear dataF
         clear data 
      end
 %end
 %}
 
+dataF=['/Users/Alexis/Desktop/Porteretal_taskprediction/output/results/Ridge/single_task/fw/pres1_pres2groupwise_fw_avg_at_end.csv'];
+data=load(dataF);
+dir=['/Users/Alexis/Desktop/Porteretal_taskprediction/output/results/Ridge/single_task/fw/pres1_pres2_fw_avg_at_end_'];
+assign_data_to_parcel_cifti_V2(data,parcel,dir, 'groupwise')
+clear dataF
