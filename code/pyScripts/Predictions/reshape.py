@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+import glob
 import matplotlib.pyplot as plt
 thisDir = os.path.expanduser('~/Desktop/Porteretal_taskprediction/')
 dataDir = thisDir + 'data/corrmats/'
@@ -1021,3 +1022,125 @@ def NULLpermuteIndices_byRow(Xtrain_task,Xtrain_rest,rowID):
     XtrainNew_rest[:,ROI_list]=tmpTask_permute
     X=np.concatenate((XtrainNew_task, XtrainNew_rest))
     return X
+def iNets_SS(train_task, sub, sesList):
+    """
+    Calculate FC all sessions matrices in list for a subs in a given task
+    Parameters
+    -----------
+    df : str
+        Path to file
+    Returns
+    -----------
+    ds : 2D upper triangle FC measures in (roi, days) format
+
+    """
+    result_arr = []
+    #loop through and append all test sets do each task/rest separate
+    for session in sesList:
+        all_ses_mats = iNetOpenSes(train_task, sub, session)
+        result_arr.append(all_ses_mats)
+    result_arr = np.concatenate(result_arr)
+    return result_arr
+
+def iNets_OS(train_task, test_subs):
+    """
+    Calculate FC matrices for all subs in a given task
+    Parameters
+    -----------
+    df : str
+        Path to file
+    Returns
+    -----------
+    ds : 2D upper triangle FC measures in (roi, days) format
+
+    """
+    result_arr = []
+    #loop through and append all test sets do each task/rest separate
+    for sub in test_subs:
+        all_sub_mats = iNetOpenALL(train_task, sub)
+        result_arr.append(all_sub_mats)
+    result_arr = np.concatenate(result_arr)
+    return result_arr
+
+def iNetOpenALL(train_task, sub):
+    """
+    Convert matlab files into upper triangle np.arrays for a given sub (all sessions/runs)
+    Parameters
+    -----------
+    df : str
+        Path to file
+    Returns
+    -----------
+    ds : 2D upper triangle FC measures in (roi, days) format
+
+    """
+    #find all files
+    files = glob.glob(dataDir+'iNetworks/'+train_task+'/'+sub+'_ses-*')
+    nsess = len(files) #FC matrices
+    nrois=333
+    ds=np.empty((nsess, int(nrois*(nrois-1)/2)))
+    count=0
+    for f in files:
+    #Consistent parameters to use for editing datasets
+
+        #Load FC file
+        fileFC=scipy.io.loadmat(f)
+
+        #Convert to numpy array
+        fileFC=np.array(fileFC['parcel_corrmat'])
+        #Replace nans and infs with zero
+        fileFC=np.nan_to_num(fileFC)
+        #Index upper triangle of matrix
+        mask=np.triu_indices(nrois,1)
+
+    #Loop through all 10 days to reshape correlations into linear form
+
+        tmp=fileFC[:,:]
+        ds[count]=tmp[mask]
+        count=count+1
+    mask = (ds == 0).all(1)
+    column_indices = np.where(mask)[0]
+    df = ds[~mask,:]
+    return df
+
+
+def iNetOpenSes(train_task, sub, ses):
+    """
+    Convert matlab files into upper triangle np.arrays for a given session
+    Parameters
+    -----------
+    df : str
+        Path to file
+    Returns
+    -----------
+    ds : 2D upper triangle FC measures in (roi, days) format
+
+    """
+    #find all files in a given session
+    files = glob.glob(dataDir+'iNetworks/'+train_task+'/'+sub+'_'+ses+'*')
+    nsess = len(files) #FC matrices
+    nrois=333
+    ds=np.empty((nsess, int(nrois*(nrois-1)/2)))
+    count=0
+    for f in files:
+    #Consistent parameters to use for editing datasets
+
+        #Load FC file
+        fileFC=scipy.io.loadmat(f)
+
+        #Convert to numpy array
+        fileFC=np.array(fileFC['parcel_corrmat'])
+        #Replace nans and infs with zero
+        fileFC=np.nan_to_num(fileFC)
+        #Index upper triangle of matrix
+        mask=np.triu_indices(nrois,1)
+
+    #Loop through all 10 days to reshape correlations into linear form
+
+        tmp=fileFC[:,:]
+        ds[count]=tmp[mask]
+        count=count+1
+    mask = (ds == 0).all(1)
+    column_indices = np.where(mask)[0]
+    df = ds[~mask,:]
+    return df

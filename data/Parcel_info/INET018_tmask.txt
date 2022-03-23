@@ -1,0 +1,16 @@
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-1/func/FD_outputs/sub-INET018_ses-1_task-mixed_run-1_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-1/func/FD_outputs/sub-INET018_ses-1_task-mixed_run-2_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-1/func/FD_outputs/sub-INET018_ses-1_task-mixed_run-3_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-1/func/FD_outputs/sub-INET018_ses-1_task-mixed_run-4_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-2/func/FD_outputs/sub-INET018_ses-2_task-mixed_run-1_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-2/func/FD_outputs/sub-INET018_ses-2_task-mixed_run-2_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-2/func/FD_outputs/sub-INET018_ses-2_task-mixed_run-3_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-2/func/FD_outputs/sub-INET018_ses-2_task-mixed_run-4_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-3/func/FD_outputs/sub-INET018_ses-3_task-mixed_run-1_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-3/func/FD_outputs/sub-INET018_ses-3_task-mixed_run-2_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-3/func/FD_outputs/sub-INET018_ses-3_task-mixed_run-3_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-3/func/FD_outputs/sub-INET018_ses-3_task-mixed_run-4_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-4/func/FD_outputs/sub-INET018_ses-4_task-mixed_run-1_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-4/func/FD_outputs/sub-INET018_ses-4_task-mixed_run-2_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-4/func/FD_outputs/sub-INET018_ses-4_task-mixed_run-3_desc-tmask_fFD.txt
+/projects/b1081/iNetworks/Nifti/derivatives/preproc_fmriprep-20.2.0/fmriprep/sub-INET018/ses-4/func/FD_outputs/sub-INET018_ses-4_task-mixed_run-4_desc-tmask_fFD.txt

@@ -1,0 +1,5 @@
+sub	sess	task	TR	dropFr	topDir	dataFolder	confoundsFolder	FDtype	runs	residuals
+INET047	4	rest	1.1	5	/projects/b1081/iNetworks/Nifti/derivatives	preproc_fmriprep-20.2.0	preproc_fmriprep-20.2.0	fFD	"1,2,3,4,5,6,7,8,9"	0
+INET047	1	rest	1.1	5	/projects/b1081/iNetworks/Nifti/derivatives	preproc_fmriprep-20.2.0	preproc_fmriprep-20.2.0	fFD	"1,2,3,4,5,6,7"	0
+INET047	2	rest	1.1	5	/projects/b1081/iNetworks/Nifti/derivatives	preproc_fmriprep-20.2.0	preproc_fmriprep-20.2.0	fFD	"1,2,3,4,5,6,7"	0
+INET047	3	rest	1.1	5	/projects/b1081/iNetworks/Nifti/derivatives	preproc_fmriprep-20.2.0	preproc_fmriprep-20.2.0	fFD	"1,2,3,4,5,6,7,8"	0

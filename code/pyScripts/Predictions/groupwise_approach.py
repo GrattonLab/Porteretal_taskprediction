@@ -868,3 +868,57 @@ def folds_MC(train_sub, clf, memFC,semFC,glassFC,motFC, restFC, testFC,ytest):
     same_Tsub=mean(CVTacc)
     diff_Tsub=mean(DSTacc)
     return same_Tsub,diff_Tsub
+
+
+
+
+def groupwiseMax_allTask():
+    """
+    Train on all sessions, leave one subject out train 7 subs test 1 subs all data all tasks
+
+    Parameters
+    -------------
+
+
+    Returns
+    -------------
+    accuracy as a csv file
+
+    """
+
+    clf=RidgeClassifier()
+    loo = LeaveOneOut()
+    cv_scoreList =[]
+    master_df=pd.DataFrame()
+    data=np.array(['MSC01','MSC02','MSC03','MSC04','MSC05','MSC06','MSC07','MSC10'],dtype='<U61')
+    for  train, test in loo.split(data): #test on one sub train on all subs
+        train_subs = data[train]
+        test_sub = data[test]
+        test_mem = reshape.matFiles(dataDir+'mem/'+test_sub[0]+'_parcel_corrmat.mat')
+        test_rest = reshape.matFiles(dataDir+'rest/corrmats_timesplit/fourths/'+test_sub[0]+'_parcel_corrmat.mat') #split up training samples
+        test_glass = reshape.matFiles(dataDir+'glass/'+test_sub[0]+'_parcel_corrmat.mat')
+        test_sem = reshape.matFiles(dataDir+'semantic/'+test_sub[0]+'_parcel_corrmat.mat')
+        test_mot = reshape.matFiles(dataDir+'motor/'+test_sub[0]+'_parcel_corrmat.mat')
+        test_task = np.concatenate((test_mem, test_glass, test_sem, test_mot))
+        task, rest = reshape.AllSubFiles(train_subs)
+        #training set
+        taskSize=task.shape[0]
+        restSize=rest.shape[0]
+        t = np.ones(taskSize, dtype = int)
+        r=np.zeros(restSize, dtype=int)
+        x_train=np.concatenate((task,rest))
+        y_train=np.concatenate((t,r))
+        #testing set (left out sub CV)
+        test_taskSize=test_task.shape[0]
+        test_restSize=test_rest.shape[0]
+        test_t = np.ones(test_taskSize, dtype = int)
+        test_r=np.zeros(test_restSize, dtype=int)
+        x_test=np.concatenate((test_task, test_rest))
+        y_test=np.concatenate((test_t,test_r))
+        #test left out sub 10 sessions
+        clf.fit(x_train,y_train)
+        ACCscores=clf.score(x_test,y_test)
+        cv_scoreList.append(ACCscores)
+    cv_score = mean(cv_scoreList)
+    master_df['acc'] = cv_scoreList
+    master_df.to_csv(outDir+'ALL_Binary/groupwiseMax_acc.csv',index=False)
