@@ -65,7 +65,8 @@ def model(train_task):
     files = [os.path.basename(x) for x in glob.glob(pattern)]
     for i in files:
         subList.append(i.split('_', 1)[0])
-
+    #Remove duplicates
+    subList = list(set(subList))
     data=np.array(subList,dtype='<U61')
     sessions=np.array(sesList,dtype='<U61')
     for  train, test in loo.split(data): #test on all other subj
@@ -201,7 +202,8 @@ def MCmodel():
     files = [os.path.basename(x) for x in glob.glob(pattern)]
     for i in files:
         subList.append(i.split('_', 1)[0])
-
+    #Remove duplicates
+    subList = list(set(subList))
     data=np.array(subList,dtype='<U61')
     sessions=np.array(sesList,dtype='<U61')
     for  train, test in loo.split(data): #test on all other subj
@@ -275,7 +277,8 @@ def Binarymodel():
     files = [os.path.basename(x) for x in glob.glob(pattern)]
     for i in files:
         subList.append(i.split('_', 1)[0])
-
+    #Remove duplicates
+    subList = list(set(subList))
     data=np.array(subList,dtype='<U61')
     sessions=np.array(sesList,dtype='<U61')
     for  train, test in loo.split(data): #test on all other subj
@@ -309,4 +312,7 @@ def Binarymodel():
     dfDS['acc'] = SSacc_folds
     dfDS.to_csv(outDir+'Binary_iNets_acc_groupwise.csv',index=False)
 
-#MCmodel()
+for task in taskList:
+    model(task)
+Binarymodel()
+MCmodel()

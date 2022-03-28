@@ -45,7 +45,8 @@ def classifyDS_INET(train_task):
     files = [os.path.basename(x) for x in glob.glob(pattern)]
     for i in files:
         subList.append(i.split('_', 1)[0])
-
+    #Remove duplicates
+    subList = list(set(subList))
     data=np.array(subList,dtype='<U61')
     sessions=np.array(sesList,dtype='<U61')
     for  train, test in loo.split(data): #test on all other subj
@@ -76,11 +77,11 @@ def classifyDS_INET(train_task):
             r=np.zeros(restFC_sample.shape[0], dtype=int)
             y = np.concatenate((t,r))
             x = np.concatenate((taskFC, restFC_sample))
-            val_rest_sample=val_rest[np.random.choice(val_rest.shape[0],val_task.shape[0], replace = False, :] #match task amount
+            #val_rest_sample=val_rest[np.random.choice(val_rest.shape[0],val_task.shape[0], replace = False, :] #match task amount
             val_t = np.ones(val_task.shape[0], dtype = int)
-            val_r=np.zeros(val_rest_sample.shape[0], dtype=int)
+            val_r=np.zeros(val_rest.shape[0], dtype=int)
             y_val = np.concatenate((val_t,val_r))
-            X_val= np.concatenate((val_task,val_rest_sample))
+            X_val= np.concatenate((val_task,val_rest))
             clf.fit(x,y)
             #Same subject
             SSscores=clf.score(X_val,y_val)
@@ -95,7 +96,7 @@ def classifyDS_INET(train_task):
     dfDS['SS'] = SStotal_acc
     dfDS['OS'] = OStotal_acc
     df=pd.melt(dfDS,id_vars=['subs'],value_vars=['SS','OS'],var_name='Analysis',value_name='acc')
-    df.to_csv(outDir+train_task+'_iNets_acc_matched_sample.csv',index=False)
+    df.to_csv(outDir+train_task+'_iNets_acc_matched_training_sample.csv',index=False)
 
 
 
@@ -127,7 +128,8 @@ def classifyALL_Binary_INET():
     files = [os.path.basename(x) for x in glob.glob(pattern)]
     for i in files:
         subList.append(i.split('_', 1)[0])
-
+    #Remove duplicates
+    subList = list(set(subList))
     data=np.array(subList,dtype='<U61')
     sessions=np.array(sesList,dtype='<U61')
     for  train, test in loo.split(data): #test on all other subj
@@ -184,12 +186,11 @@ def classifyALL_Binary_INET():
 
 def classifyALL_MC_INET():
     """
-    Classifying different subjects (DS) along the same task
+    Classifying different subjects multiclass
 
     Parameters
     -------------
     classifier : string
-        Provide classifier type for analysis, options SVM=LinearSVC(), Log=LogisticRegression(solver='lbfgs'), Ridge=RidgeClassifier()
 
     Returns
     -------------
@@ -199,8 +200,7 @@ def classifyALL_MC_INET():
     """
     clf=RidgeClassifier()
 
-    all_CM_DS=np.zeros((3,3))
-    all_CM_CV=np.zeros((3,3))
+
     OStotal_acc=[]
     SStotal_acc=[]
     dfDS=pd.DataFrame()
@@ -212,7 +212,8 @@ def classifyALL_MC_INET():
     files = [os.path.basename(x) for x in glob.glob(pattern)]
     for i in files:
         subList.append(i.split('_', 1)[0])
-
+    #Remove duplicates
+    subList = list(set(subList))
     data=np.array(subList,dtype='<U61')
     sessions=np.array(sesList,dtype='<U61')
     for  train, test in loo.split(data): #test on all other subj
@@ -245,7 +246,7 @@ def classifyALL_MC_INET():
             restFC = iNets_SS('rest', train_sub[0], train_sub_ses)
             val_rest = iNetOpenSes('rest', train_sub[0], val_sub_ses[0])
             #make sure rest and task sets are the same amount
-            val_rest=val_rest[np.random.choice(val_rest.shape[0], val_mix.shape[0], replace=False), :]
+            #val_rest=val_rest[np.random.choice(val_rest.shape[0], val_mix.shape[0], replace=False), :]
             restFC=restFC[np.random.choice(restFC.shape[0], mixFC.shape[0], replace=False), :]
 
             s = np.full(slowFC.shape[0], 2)
@@ -288,7 +289,7 @@ def classifyALL_MC_INET():
     dfDS['SS'] = SStotal_acc
     dfDS['OS'] = OStotal_acc
     df=pd.melt(dfDS,id_vars=['subs'],value_vars=['SS','OS'],var_name='Analysis',value_name='acc')
-    df.to_csv(outDir+'ALL_MC_iNets_acc.csv',index=False)
+    df.to_csv(outDir+'ALL_MC_iNets_matchedTrainingSamples_acc.csv',index=False)
     #np.savetxt(outDir+'CM_DS.csv', finalDS)
     #np.savetxt(outDir+'CM_SS.csv', finalCV)
 
@@ -419,6 +420,5 @@ def iNetOpenSes(train_task, sub, ses):
 
 for task in taskList:
     classifyDS_INET(task)
-#classifyDS_INET('mixed')
 classifyALL_Binary_INET()
 classifyALL_MC_INET()
