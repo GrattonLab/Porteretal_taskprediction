@@ -5,6 +5,7 @@
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import LeaveOneOut
 from sklearn.linear_model import RidgeClassifier
+from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
 import glob
@@ -312,7 +313,86 @@ def Binarymodel():
     dfDS['acc'] = SSacc_folds
     dfDS.to_csv(outDir+'Binary_iNets_acc_groupwise.csv',index=False)
 
-for task in taskList:
-    model(task)
-Binarymodel()
-MCmodel()
+#for task in taskList:
+#    model(task)
+#Binarymodel()
+#MCmodel()
+
+
+
+def model_split_match_indiv(train_task):
+    """
+    Preparing machine learning model with appropriate data
+
+    Parameters
+    -------------
+    train_task : str
+            Task name for training
+    test_task : str
+            Task name for testing
+
+    Returns
+    -------------
+    within_score : float
+            Average accuracy of all folds leave one sub out of a given task
+    within_sens : float
+            Sensitivity score for model within task
+    within spec : float
+            Specificity score for model within task
+    btn_score : float
+            Average accuracy of all folds leave one sub out of a given task
+    btn_sens : float
+            Sensitivity score for model within task
+    btn spec : float
+            Specificity score for model within task
+
+    """
+
+    clf=RidgeClassifier()
+    loo = LeaveOneOut()
+    SSacc_folds=[]
+    dfDS=pd.DataFrame()
+    #get all subs for a given task
+    #make list based on available subjects in task folder
+    subList=[]
+    pattern = dataDir+train_task+"/*"
+    files = [os.path.basename(x) for x in glob.glob(pattern)]
+    for i in files:
+        subList.append(i.split('_', 1)[0])
+    #Remove duplicates
+    subList = list(set(subList))
+    data=np.array(subList,dtype='<U61')
+    sessions=np.array(sesList,dtype='<U61')
+    tmp=np.ones(data.shape[0])
+
+
+    for  i in range(100): #repeat test train split 100 times
+        X_train, X_test, y_train, y_test = train_test_split(data, tmp, test_size=0.33)
+        #randomly collects one run one session per subj
+        Xtask = iNets_OS_onerun(train_task, X_train)
+        Xrest = iNets_OS_onerun('rest', X_train)
+        #make sure rest and task sets are the same amount
+        y_task=np.ones(Xtask.shape[0])
+        y_rest=np.zeros(Xrest.shape[0])
+        y=np.concatenate((y_task,y_rest))
+        X=np.concatenate((Xtask,Xrest))
+        #left out subs
+        X_ind_task = iNets_OS_onerun(train_task, X_test)
+        X_ind_rest = iNets_OS_onerun('rest', X_test)
+        #make sure rest and task sets are the same amount
+        y_test_task=np.ones(X_ind_task.shape[0])
+        y_test_rest=np.zeros(X_ind_rest.shape[0])
+        ytest=np.concatenate((y_test_task,y_test_rest))
+        Xtest=np.concatenate((X_ind_task,X_ind_rest))
+
+        clf.fit(X,y)
+        #Same subject
+        SSscores=clf.score(Xtest,ytest)
+        SSacc_folds.append(SSscores)
+
+    #SStotal_acc=(mean(SSacc_folds)
+    dfDS['acc'] = SSacc_folds
+    dfDS.to_csv(outDir+train_task+'_iNets_acc_groupwise_testtrainsplit.csv',index=False)
+
+
+model_split_match_indiv('slowreveal')
