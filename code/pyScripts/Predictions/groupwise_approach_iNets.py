@@ -394,5 +394,157 @@ def model_split_match_indiv(train_task):
     dfDS['acc'] = SSacc_folds
     dfDS.to_csv(outDir+train_task+'_iNets_acc_groupwise_testtrainsplit.csv',index=False)
 
+def MCmodel_split_match_indiv():
+    """
+    Preparing machine learning model with appropriate data
 
-model_split_match_indiv('slowreveal')
+    Parameters
+    -------------
+    train_task : str
+            Task name for training
+    test_task : str
+            Task name for testing
+
+    Returns
+    -------------
+    within_score : float
+            Average accuracy of all folds leave one sub out of a given task
+    within_sens : float
+            Sensitivity score for model within task
+    within spec : float
+            Specificity score for model within task
+    btn_score : float
+            Average accuracy of all folds leave one sub out of a given task
+    btn_sens : float
+            Sensitivity score for model within task
+    btn spec : float
+            Specificity score for model within task
+
+    """
+
+    clf=RidgeClassifier()
+    loo = LeaveOneOut()
+    SSacc_folds=[]
+    dfDS=pd.DataFrame()
+    #get all subs for a given task
+    #make list based on available subjects in task folder
+    subList=[]
+    pattern = dataDir+"mixed/*"
+    files = [os.path.basename(x) for x in glob.glob(pattern)]
+    for i in files:
+        subList.append(i.split('_', 1)[0])
+    #Remove duplicates
+    subList = list(set(subList))
+    data=np.array(subList,dtype='<U61')
+    sessions=np.array(sesList,dtype='<U61')
+    tmp=np.ones(data.shape[0])
+
+
+    for  i in range(100): #repeat test train split 100 times
+        test_subs, train_sub, y_train, y_test = train_test_split(data, tmp, test_size=0.33)
+
+        #randomly collects one run one session per subj
+        testing_set_mix = iNets_OS_onerun('mixed', test_subs)
+        testing_set_slow = iNets_OS_onerun('slowreveal', test_subs)
+        testing_set_rest = iNets_OS_onerun('rest', test_subs)
+        #make sure rest and task sets are the same amount
+        y_test_slow=np.full(testing_set_slow.shape[0],2)
+        y_test_mix=np.ones(testing_set_mix.shape[0])
+        y_test_rest=np.zeros(testing_set_rest.shape[0])
+        ytest=np.concatenate((y_test_slow,y_test_mix,y_test_rest))
+        Xtest=np.concatenate((testing_set_slow,testing_set_mix,testing_set_rest))
+        #left out sub
+        LOS_slow=iNets_OS_onerun('slowreveal', train_sub)
+        LOS_mix=iNets_OS_onerun('mixed', train_sub)
+        LOS_rest=iNets_OS_onerun('rest', train_sub)
+        slow=np.full(LOS_slow.shape[0],2)
+        mix=np.ones(LOS_mix.shape[0])
+        rest=np.zeros(LOS_rest.shape[0])
+        y=np.concatenate((slow, mix,rest))
+        X=np.concatenate((LOS_slow,LOS_mix,LOS_rest))
+        clf.fit(Xtest,ytest)
+        #Same subject
+        SSscores=clf.score(X,y)
+        SSacc_folds.append(SSscores)
+
+    #SStotal_acc=(mean(SSacc_folds)
+    dfDS['acc'] = SSacc_folds
+    dfDS.to_csv(outDir+'MC_iNets_acc_groupwise_testtrainsplit.csv',index=False)
+
+
+def Binarymodel_split_match_indiv():
+    """
+    Preparing machine learning model with appropriate data
+
+    Parameters
+    -------------
+    train_task : str
+            Task name for training
+    test_task : str
+            Task name for testing
+
+    Returns
+    -------------
+    within_score : float
+            Average accuracy of all folds leave one sub out of a given task
+    within_sens : float
+            Sensitivity score for model within task
+    within spec : float
+            Specificity score for model within task
+    btn_score : float
+            Average accuracy of all folds leave one sub out of a given task
+    btn_sens : float
+            Sensitivity score for model within task
+    btn spec : float
+            Specificity score for model within task
+
+    """
+
+    clf=RidgeClassifier()
+    loo = LeaveOneOut()
+    SSacc_folds=[]
+    dfDS=pd.DataFrame()
+    #get all subs for a given task
+    #make list based on available subjects in task folder
+    subList=[]
+    pattern = dataDir+"mixed/*"
+    files = [os.path.basename(x) for x in glob.glob(pattern)]
+    for i in files:
+        subList.append(i.split('_', 1)[0])
+    #Remove duplicates
+    subList = list(set(subList))
+    data=np.array(subList,dtype='<U61')
+    sessions=np.array(sesList,dtype='<U61')
+    tmp=np.ones(data.shape[0])
+    for  i in range(100): #repeat test train split 100 times
+        test_subs, train_sub, y_train, y_test = train_test_split(data, tmp, test_size=0.33)
+        #randomly collects one run one session per subj
+        testing_set_mix = iNets_OS_onerun('mixed', test_subs)
+        testing_set_slow = iNets_OS_onerun('slowreveal', test_subs)
+        testing_set_rest = iNets_OS_onerun('rest', test_subs)
+        #make sure rest and task sets are the same amount
+        y_test_slow=np.ones(testing_set_slow.shape[0])
+        y_test_mix=np.ones(testing_set_mix.shape[0])
+        y_test_rest=np.zeros(testing_set_rest.shape[0])
+        ytest=np.concatenate((y_test_slow,y_test_mix,y_test_rest))
+        Xtest=np.concatenate((testing_set_slow,testing_set_mix,testing_set_rest))
+        #left out sub
+        LOS_slow=iNets_OS_onerun('slowreveal', train_sub)
+        LOS_mix=iNets_OS_onerun('mixed', train_sub)
+        LOS_rest=iNets_OS_onerun('rest', train_sub)
+        slow=np.ones(LOS_slow.shape[0])
+        mix=np.ones(LOS_mix.shape[0])
+        rest=np.zeros(LOS_rest.shape[0])
+        y=np.concatenate((slow, mix,rest))
+        X=np.concatenate((LOS_slow,LOS_mix,LOS_rest))
+        clf.fit(Xtest,ytest)
+        #Same subject
+        SSscores=clf.score(X,y)
+        SSacc_folds.append(SSscores)
+
+    #SStotal_acc=(mean(SSacc_folds)
+    dfDS['acc'] = SSacc_folds
+    dfDS.to_csv(outDir+'Binary_iNets_acc_groupwise_testtrainsplit.csv',index=False)
+#model_split_match_indiv('slowreveal')
+Binarymodel_split_match_indiv()
+MCmodel_split_match_indiv()
