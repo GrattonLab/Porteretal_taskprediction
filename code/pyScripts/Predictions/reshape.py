@@ -11,6 +11,7 @@ import os
 import glob
 import matplotlib.pyplot as plt
 thisDir = os.path.expanduser('~/Desktop/Porteretal_taskprediction/')
+splitDict=dict([('MSC01',10),('MSC02',10),('MSC03',8),('MSC04',10),('MSC05',10),('MSC06',9),('MSC07',9),('MSC10',10)])
 dataDir = thisDir + 'data/corrmats/'
 def matFiles(df='path'):
     """
@@ -1141,6 +1142,96 @@ def iNetOpenSes(train_task, sub, ses):
         ds[count]=tmp[mask]
         count=count+1
     mask = (ds == 0).all(1)
-    column_indices = np.where(mask)[0]
+    column_indices = np.where(mask)[0] #remove inf or nans
     df = ds[~mask,:]
+
     return df
+
+
+
+def groupIND(task='mixed', train_sub = 'string'):
+    """
+    Formats arrays to be in the same format as the reorganized index
+    Parameters
+    -----------
+    df : str
+        Path to file
+    Returns
+    ------------
+    dsNet : Array of task or rest FC with only blocks
+    """
+    if task == 'rest':
+        fileFC=scipy.io.loadmat(dataDir+task+'/corrmats_timesplit/fourths/'+train_sub+'_parcel_corrmat.mat')
+        fileFC=np.array(fileFC['parcel_corrmat'])
+        fileFC=np.nan_to_num(fileFC)
+        nsess = nsess=fileFC.shape[2]
+    else:
+        fileFC=scipy.io.loadmat(dataDir+task+'/'+train_sub+'_parcel_corrmat.mat')
+        fileFC=np.array(fileFC['parcel_corrmat'])
+        fileFC=np.nan_to_num(fileFC)
+        nsess=splitDict[train_sub]
+    dsNet=np.empty((nsess, 91))
+    dsNet_count=0
+    mask=np.triu_indices(91,1)
+    for sess in range(nsess):
+        ds=fileFC[:,:,sess]
+        Parcel_params = loadParcelParams('Gordon333')
+        roi_sort = np.squeeze(Parcel_params['roi_sort'])
+        corrmat=ds[roi_sort,:][:,roi_sort]
+        nrois=list(range(333))
+        nets=[]
+        position=0
+        count=0
+        networks=Parcel_params['networks']
+        t=Parcel_params['transitions']
+    #have to add extra value otherwise error
+        transitions=np.append(t,333)
+        while count<333:
+            if count<=transitions[position]:
+                nets.append(networks[position])
+                count=count+1
+            else:
+                position=position+1
+        #transform data to locate network
+        df=pd.DataFrame(corrmat, index=[nets, nrois], columns=[nets, nrois])
+        #Replace middle diagonal with Nans
+        df = df.where(df.values != np.diag(df),np.nan,df.where(df.values != np.flipud(df).diagonal(0),0,inplace=True))
+        layers1 = df.groupby(level=[0], axis = 1).mean()
+        final_df = layers1.groupby(level=0).mean()
+        df_ut = final_df.where(np.triu(np.ones(final_df.shape)).astype(np.bool))
+        df_new=pd.melt(df_ut,ignore_index=False)
+        df_new.dropna(inplace=True)
+        df_new.reset_index(inplace=True)
+        clean=df_new.value.values
+        if clean.shape[0] == 0:
+            #print(f"{dsNet_count} is empty skipping session")
+            continue
+        dsNet[dsNet_count]=clean
+        dsNet_count=dsNet_count+1
+    mask = (dsNet == 0).all(1)
+    column_indices = np.where(mask)[0]
+    df = dsNet[~mask,:]
+    #x = df[np.logical_not(np.isnan(df))]
+    #df=np.reshape(x,(-1,91))
+    df=np.nan_to_num(df)
+    return df
+
+def groupIND_OS(train_task, test_subs):
+    """
+    Calculate FC matrices for all subs in a given task
+    Parameters
+    -----------
+    df : str
+        Path to file
+    Returns
+    -----------
+    ds : 2D upper triangle FC measures in (roi, days) format
+
+    """
+    result_arr = []
+    #loop through and append all test sets do each task/rest separate
+    for sub in test_subs:
+        all_sub_mats = groupIND(train_task, sub)
+        result_arr.append(all_sub_mats)
+    result_arr = np.concatenate(result_arr)
+    return result_arr
